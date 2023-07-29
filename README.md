@@ -1,2 +1,2 @@
-# FURA: a structural database for FUnctions of RnA #
+# Furna: a structural database for FUnctions of RNA #
 
