@@ -8,8 +8,8 @@ my $rootdir = dirname($bindir);
 print "download Rfam\n";
 system("mkdir -p $rootdir/Rfam");
 &download_from_rfam("Rfam.pdb.gz", "Rfam/Rfam.pdb.gz");
-
 &download_from_rfam("rfam2go/rfam2go", "Rfam/rfam2go");
+&download_from_rfam("Rfam.cm.gz", "Rfam/Rfam.cm.gz");
 
 exit();
 
