@@ -13,6 +13,9 @@ system("mkdir -p $rootdir/pdb/derived_data/index/");
 &download_from_pdb("derived_data/index/resolu.idx",
                "pdb/derived_data/index/resolu.idx");
 
+&download_from_pdb("derived_data/index/cmpd_res.idx",
+               "pdb/derived_data/index/cmpd_res.idx");
+
 system("cat $rootdir/pdb/derived_data/pdb_entry_type.txt |grep -P 'nuc\\t'|cut -f1 > $rootdir/pdb/derived_data/nuc.list");
 foreach my $pdbid(`cat $rootdir/pdb/derived_data/nuc.list`)
 {
