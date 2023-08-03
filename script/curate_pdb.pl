@@ -14,20 +14,62 @@ system("$bindir/SortFastaWithResolution.py $rootdir/pdb/derived_data/index/resol
 system("$bindir/SortFastaWithResolution.py $rootdir/pdb/derived_data/index/resolu.idx $rootdir/pdb/derived_data/fragment.fasta $rootdir/data/fragment.fasta");
 system("$bindir/fasta_nr.py $rootdir/data/rna.fasta $rootdir/data/rna_nr.fasta $rootdir/data/rna_nr.tsv");
 
-foreach my $chain (`cat $rootdir/pdb/derived_data/rna.fasta |grep '>'|cut -f1|sed 's/^>//g'`)
+foreach my $line(`cat $rootdir/pdb/derived_data/rna.fasta |grep '^>'`)
 {
-    chomp($chain);
-    if ($chain=~/(\w+):(\w+)/)
+    if ($line=~/>(\w+):(\w+)\tRNA\t(\d+)/)
     {
         my $pdbid="$1";
         my $chainID="$2";
+        my $L="$3";
         my $divided=substr($pdbid,length($pdbid)-3,2);
+        print "$pdbid $chainID $L\n";
+        
         system("mkdir -p $rootdir/chain/$divided") if (!-d "$rootdir/chain/$divided");
         my $filename="$rootdir/chain/$divided/$pdbid$chainID.pdb";
-        next if (-s "$filename.gz");
-        print "$filename.gz\n";
-        system("$bindir/cif2chain $rootdir/pdb/data/structures/divided/mmCIF/$divided/$pdbid.cif.gz $filename $chainID");
-        system("gzip -f $filename");
+        if (!-s "$filename.gz")
+        {
+            print "$filename.gz\n";
+            system("$bindir/cif2chain $rootdir/pdb/data/structures/divided/mmCIF/$divided/$pdbid.cif.gz $filename $chainID");
+            system("gzip -f $filename");
+        }
+
+        system("mkdir -p $rootdir/cssr/$divided") if (!-d "$rootdir/cssr/$divided");
+        my $cssrfile="$rootdir/cssr/$divided/$pdbid$chainID.cssr";
+        if (!-s "$cssrfile")
+        {
+            print "$cssrfile\n";
+            system("$bindir/CSSR $filename.gz $cssrfile -o 3");
+        }
+
+        system("mkdir -p $rootdir/dssr/$divided") if (!-d "$rootdir/dssr/$divided");
+        system("mkdir -p $rootdir/arena/$divided") if (!-d "$rootdir/arena/$divided");
+        my $arenafile="$rootdir/arena/$divided/$pdbid$chainID.pdb";
+        my $dssrfile="$rootdir/dssr/$divided/$pdbid$chainID.dssr";
+        if (!-s "$dssrfile" || !-s "$arenafile.gz")
+        {
+            print "$dssrfile\n";
+            my $tmpdir="$rootdir/tmp/$pdbid$chainID";
+            system("mkdir -p $tmpdir");
+            system("$bindir/Arena $filename.gz $tmpdir/arena.pdb 5");
+            system("cd $tmpdir; $bindir/x3dna-dssr -i=arena.pdb >/dev/null");
+            my $sequence=`cat $tmpdir/dssr-2ndstrs.dbn |head -2|tail -1|sed 's/&//g'`;
+            chomp($sequence);
+            if (length $sequence ne $L)
+            {
+                system("$bindir/Arena $tmpdir/arena.pdb $tmpdir/arena.pdb 6");
+                system("cd $tmpdir; $bindir/x3dna-dssr -i=arena.pdb >/dev/null");
+            }
+            if (`cat $tmpdir/dssr-2ndstrs.dbn|wc -l`+0==3)
+            {
+                my $txt=`tail -1 $tmpdir/dssr-2ndstrs.dbn|sed 's/&//g'`;
+                $txt.=`$bindir/x3dna-dssr -i=$tmpdir/arena.pdb --pair-only`;
+                open(FP,">$dssrfile");
+                print FP "$txt";
+                close(FP);
+            }
+            system("cat $tmpdir/arena.pdb |gzip - > $arenafile.gz");
+            system("rm -rf $tmpdir");
+        }
     }
 }
 
