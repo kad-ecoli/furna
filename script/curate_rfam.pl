@@ -30,7 +30,8 @@ if (-s "$rootdir/Rfam/rna_nr.tblout")
 {
     foreach my $batch (`tac $rootdir/Rfam/rna_nr.list`)
     {
-        system("rm $rootdir/Rfam/rna_nr.tblout.$batch $rootdir/Rfam/rna_nr.split.$batch");
+        system("rm $rootdir/Rfam/rna_nr.tblout.$batch");
+        system("rm $rootdir/Rfam/rna_nr.split.$batch");
     }
 }
 
