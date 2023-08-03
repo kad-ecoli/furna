@@ -411,8 +411,35 @@ foreach my $target(@target_list)
     }
 }
 
-my $txt="#pdb\tchain\tresolution\tRfam\tRNAcentral\tpubmed\t";
-$txt.="GO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\ttitle\n";
+my %cssr_dict;
+my %dssr_dict;
+foreach my $target(@target_list)
+{
+    if ($target=~/(\w+):(\w+)/)
+    {
+        my $pdbid  ="$1";
+        my $chainid="$2";
+        my $chain  ="$pdbid$chainid";
+        my $divided=substr($pdbid,length($pdbid)-3,2);
+        my $cssrfile="$rootdir/cssr/$divided/$chain.cssr";
+        if (-s "$cssrfile")
+        {
+            my $cssr=`head -1 $cssrfile`;
+            chomp($cssr);
+            $cssr_dict{$chain}=$cssr;
+        }
+        my $dssrfile="$rootdir/dssr/$divided/$chain.dssr";
+        if (-s "$dssrfile")
+        {
+            my $dssr=`head -1 $dssrfile`;
+            chomp($dssr);
+            $dssr_dict{$chain}=$dssr;
+        }
+    }
+}
+
+my $txt="#pdb\tchain\tL\tresolution\tRfam\tRNAcentral\tpubmed\t";
+$txt.="GO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\tcssr\tdssr\ttitle\n";
 foreach my $target(@target_list)
 {
     if ($target=~/(\w+):(\w+)/)
@@ -429,6 +456,8 @@ foreach my $target(@target_list)
         my $GO_BP  ="";
         my $GO_CC  ="";
         my $taxon  ="";
+        my $cssr   ="";
+        my $dssr   ="";
         my $title  ="";
 
         if (exists($resolu_dict{$pdbid}))
@@ -499,26 +528,33 @@ foreach my $target(@target_list)
         {
             $taxon=$taxon_dict{$chain};
         }
+        if (exists($cssr_dict{$chain}))
+        {
+            $cssr=$cssr_dict{$chain};
+        }
+        if (exists($dssr_dict{$chain}))
+        {
+            $dssr=$dssr_dict{$chain};
+        }
         if (exists($title_dict{$pdbid}))
         {
             $title="$title_dict{$pdbid}";
         }
         
-
         my $sequence=$fasta_dict{$chain};
+        my $L=length $sequence;
 
         $GO_MF=substr($GO_MF,1) if ($GO_MF=~/^,/);
         $GO_BP=substr($GO_BP,1) if ($GO_BP=~/^,/);
         $GO_CC=substr($GO_CC,1) if ($GO_CC=~/^,/);
 
 
-        $txt.="$pdbid\t$chainid\t$resolu\t$rfam\t$rnacentral\t$pubmed\t";
-        $txt.="$GO_MF\t$GO_BP\t$GO_CC\t$taxon\t$sequence\t$title\n";
+        $txt.="$pdbid\t$chainid\t$L\t$resolu\t$rfam\t$rnacentral\t$pubmed\t";
+        $txt.="$GO_MF\t$GO_BP\t$GO_CC\t$taxon\t$sequence\t$cssr\t$dssr\t$title\n";
     }
 }
 open(FP,">$rootdir/data/rna.tsv");
 print FP "$txt";
 close(FP);
-
 
 exit();
