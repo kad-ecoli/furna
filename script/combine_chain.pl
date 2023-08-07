@@ -411,6 +411,8 @@ foreach my $target(@target_list)
     }
 }
 
+print "$rootdir/cssr/*/*.cssr\n";
+print "$rootdir/dssr/*/*.dssr\n";
 my %cssr_dict;
 my %dssr_dict;
 foreach my $target(@target_list)
@@ -438,8 +440,42 @@ foreach my $target(@target_list)
     }
 }
 
+print "$rootdir/goa/ec2go\n";
+my %go2ec_dict;
+foreach my $line(`cat $rootdir/goa/ec2go`)
+{
+    chomp($line);
+    if ($line=~/^(EC:[-.\d]+)/)
+    {
+        my $ec="$1";
+        if ($line=~/(GO:\d+)$/)
+        {
+            my $GOterm="$1";
+            $go2ec_dict{$GOterm}=$ec;
+        }
+    }
+}
+
+print "$rootdir/goa/is_a.csv\n";
+my %isa_dict;
+foreach my $line(`cat $rootdir/goa/is_a.csv`)
+{
+    chomp($line);
+    my @items=split(/\t/,$line);
+    my $GOterm =$items[0];
+    my $Aspect =$items[1];
+    my $parent =$items[2];
+    my $indirect=$items[3];
+    if (length $parent && length $indirect)
+    {
+        $parent.=",$indirect";
+    }
+    $isa_dict{$GOterm}=$parent;
+}
+
+print "$rootdir/data/rna.tsv\n";
 my $txt="#pdb\tchain\tL\tresolution\tRfam\tRNAcentral\tpubmed\t";
-$txt.="GO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\tcssr\tdssr\ttitle\n";
+$txt.="EC\tGO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\tcssr\tdssr\ttitle\n";
 foreach my $target(@target_list)
 {
     if ($target=~/(\w+):(\w+)/)
@@ -452,6 +488,7 @@ foreach my $target(@target_list)
         my $rfam   ="";
         my $rnacentral="";
         my $pubmed ="";
+        my $EC_list="";
         my $GO_MF  ="";
         my $GO_BP  ="";
         my $GO_CC  ="";
@@ -548,9 +585,45 @@ foreach my $target(@target_list)
         $GO_BP=substr($GO_BP,1) if ($GO_BP=~/^,/);
         $GO_CC=substr($GO_CC,1) if ($GO_CC=~/^,/);
 
+        foreach my $GOterm(split(/,/,$GO_MF))
+        {
+            if (exists($go2ec_dict{$GOterm}))
+            {
+                my $EC=$go2ec_dict{$GOterm};
+                next if ($EC_list=~/$EC/);
+                if ($EC=~/(EC:[.\d]+).[-.]+$/)
+                {
+                    my $prefix="$1";
+                    next if ($EC_list=~/$prefix/);
+                }
+                $EC_list.=",$EC";
+            }
+        }
+        if (length $EC_list==0)
+        {
+            foreach my $GOterm(split(/,/,$GO_MF))
+            {
+                if (!exists($go2ec_dict{$GOterm}) && exists($isa_dict{$GOterm}))
+                {
+                    foreach my $parent(split(/,/,$isa_dict{$GOterm}))
+                    {
+                        next if (!exists($go2ec_dict{$parent}));
+                        my $EC=$go2ec_dict{$parent};
+                        next if ($EC_list=~/$EC/);
+                        if ($EC=~/(EC:[.\d]+).[-.]+$/)
+                        {
+                            my $prefix="$1";
+                            next if ($EC_list=~/$prefix/);
+                        }
+                        $EC_list.=",$EC";
+                    }
+                }
+            }
+        }
+        $EC_list=substr($EC_list,1) if ($EC_list=~/^,/);
 
         $txt.="$pdbid\t$chainid\t$L\t$resolu\t$rfam\t$rnacentral\t$pubmed\t";
-        $txt.="$GO_MF\t$GO_BP\t$GO_CC\t$taxon\t$sequence\t$cssr\t$dssr\t$title\n";
+        $txt.="$EC_list\t$GO_MF\t$GO_BP\t$GO_CC\t$taxon\t$sequence\t$cssr\t$dssr\t$title\n";
     }
 }
 open(FP,">$rootdir/data/rna.tsv");
