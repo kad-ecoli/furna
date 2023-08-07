@@ -9,6 +9,7 @@ print "download GOA\n";
 system("mkdir -p $rootdir/goa/UNIPROT");
 &download_from_goa("UNIPROT/goa_uniprot_all.gaf.gz", "goa/UNIPROT/goa_uniprot_all.gaf.gz");
 system("wget -q http://purl.obolibrary.org/obo/go/go-basic.obo -O $rootdir/goa/go-basic.obo");
+system("wget -q http://current.geneontology.org/ontology/external2go/ec2go -O $rootdir/goa/ec2go");
 
 exit();
 
