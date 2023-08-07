@@ -22,7 +22,7 @@ foreach my $line(`cat $rootdir/pdb/derived_data/rna.fasta |grep '^>'`)
         my $chainID="$2";
         my $L="$3";
         my $divided=substr($pdbid,length($pdbid)-3,2);
-        print "$pdbid $chainID $L\n";
+        #print "$pdbid $chainID $L\n";
         
         system("mkdir -p $rootdir/chain/$divided") if (!-d "$rootdir/chain/$divided");
         my $filename="$rootdir/chain/$divided/$pdbid$chainID.pdb";
@@ -31,6 +31,11 @@ foreach my $line(`cat $rootdir/pdb/derived_data/rna.fasta |grep '^>'`)
             print "$filename.gz\n";
             system("$bindir/cif2chain $rootdir/pdb/data/structures/divided/mmCIF/$divided/$pdbid.cif.gz $filename $chainID");
             system("gzip -f $filename");
+            if (-s "$filename.gz")
+            {
+                system("zcat $filename.gz | cut -c1-54 > $filename");
+                system("gzip -f $filename");
+            }
         }
 
         system("mkdir -p $rootdir/cssr/$divided") if (!-d "$rootdir/cssr/$divided");
@@ -45,6 +50,7 @@ foreach my $line(`cat $rootdir/pdb/derived_data/rna.fasta |grep '^>'`)
         system("mkdir -p $rootdir/arena/$divided") if (!-d "$rootdir/arena/$divided");
         my $arenafile="$rootdir/arena/$divided/$pdbid$chainID.pdb";
         my $dssrfile="$rootdir/dssr/$divided/$pdbid$chainID.dssr";
+
         if (!-s "$dssrfile" || !-s "$arenafile.gz")
         {
             print "$dssrfile\n";
@@ -67,7 +73,18 @@ foreach my $line(`cat $rootdir/pdb/derived_data/rna.fasta |grep '^>'`)
                 print FP "$txt";
                 close(FP);
             }
-            system("cat $tmpdir/arena.pdb |gzip - > $arenafile.gz");
+            system("cat $tmpdir/arena.pdb |cut -c1-54|gzip - > $arenafile.gz");
+            if (!-s "$tmpdir/arena.pdb")
+            {
+                system("$bindir/Arena $filename.gz $tmpdir/arena.pdb 4");
+                system("cd $tmpdir; $bindir/x3dna-dssr -i=arena.pdb >/dev/null");
+                my $txt=`tail -1 $tmpdir/dssr-2ndstrs.dbn|sed 's/&//g'`;
+                $txt.=`$bindir/x3dna-dssr -i=$tmpdir/arena.pdb --pair-only`;
+                open(FP,">$dssrfile");
+                print FP "$txt";
+                close(FP);
+                system("cat $tmpdir/arena.pdb |cut -c1-54|gzip - > $arenafile.gz");
+            }
             system("rm -rf $tmpdir");
         }
     }
