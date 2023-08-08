@@ -3320,7 +3320,7 @@ int cif2pdb(const string &infile, const string &recChainID, string &prefix)
         return -1;
     }
     else
-        cerr<<recChainIdx<<"-th chain is receptor chain "<<recChainID<<endl;
+        cerr<<recChainIdx+1<<"-th chain is receptor chain "<<recChainID<<endl;
     
 
     /* write macromolecules */
