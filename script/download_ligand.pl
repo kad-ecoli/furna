@@ -67,17 +67,29 @@ foreach my $line(`zcat $rootdir/UniChem/src3src9.txt.gz|tail -n +2`)
 }
 
 
+system("mkdir -p $rootdir/download/") if (!-d "$rootdir/download/");
+$txt="#Rank\tLigand\tFrequency\n";
 my %interaction_dict;
-my $cmd="cat $rootdir/data/interaction.tsv |grep -v '^#'|cut -f4|sort|uniq";
+my $cmd="cat $rootdir/data/interaction.tsv |grep -v '^#'|cut -f4|sort|uniq -c|sort -nr";
 if (-s "$rootdir/data/interaction.tsv.gz")
 {
     $cmd="z$cmd";
 }
-foreach my $ccd(`$cmd`)
+my $i=0;
+foreach my $line(`$cmd`)
 {
-    chomp($ccd);
-    $interaction_dict{$ccd}=1;
+    if ($line=~/(\d+)\s+(\w+)/)
+    {
+        my $freq="$1";
+        my $ccd ="$2";
+        $interaction_dict{$ccd}="$freq";
+        $i++;
+        $txt.="$i\t$ccd\t$freq\n";
+    }
 }
+open(FP,">$rootdir/download/lig_frequency.txt");
+print FP "$txt";
+close(FP);
 
 print "download CCD ligand\n";
 system("mkdir -p $rootdir/pdb/data/monomers/");
