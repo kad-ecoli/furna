@@ -23,7 +23,12 @@ my $rootdir = dirname($bindir);
 my $pubmeddir = "$rootdir/pubmed";
 system("mkdir -p $pubmeddir");
 
-foreach my $pmid(`grep -v '#' $rootdir/data/rna.tsv |cut -f7|sort|uniq|sed 's/,/\\n/g'|sort|uniq`)
+my $cmd="cat $rootdir/data/rna.tsv | grep -v '#'  |cut -f7|sort|uniq|sed 's/,/\\n/g'|sort|uniq";
+if (-s "$rootdir/data/rna.tsv.gz")
+{
+    $cmd="z$cmd";
+}
+foreach my $pmid(`$cmd`)
 {
     chomp($pmid);
     next if (-s "$pubmeddir/$pmid.txt");

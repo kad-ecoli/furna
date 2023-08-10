@@ -6,7 +6,12 @@ my $bindir = dirname(abs_path(__FILE__));
 my $rootdir = dirname($bindir);
 
 print "download PDB\n";
-foreach my $line(`cut -f1,2 $rootdir/data/rna.tsv|grep -v '^#'`)
+my $cmd="cat $rootdir/data/rna.tsv| cut -f1,2 |grep -v '^#'";
+if (-s "$rootdir/data/rna.tsv.gz")
+{
+    $cmd="z$cmd";
+}
+foreach my $line(`$cmd`)
 {
     if ($line=~/^(\w+)\t(\w+)/)
     {
