@@ -22,4 +22,6 @@ script/combine_chain.pl
 ```bash
 script/download_pubmed.pl
 script/download_assembly.pl
+script/combine_interaction.pl
+script/download_ligand.pl
 ```
