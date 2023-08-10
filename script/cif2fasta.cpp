@@ -6,6 +6,9 @@ const char* docstring=""
 "    folder/          folder of cif files\n"
 "    list             list of pdb ids (lower case)\n"
 "                     input files will be folder/*/{pdbid}.cif.gz\n"
+"\n"
+"cif2fasta input.cif\n"
+"    convert cif file into fasta sequences\n"
 ;
 
 #include <vector>
@@ -2753,10 +2756,20 @@ inline bool isfile(const string& filename)
 
 int main(int argc,char **argv)
 {
-    if (argc!=3)
+    if (argc!=2 && argc!=3)
     {
         cerr<<docstring<<endl;
         return 1;
+    }
+    if (argc==2)
+    {
+        string filename=argv[1];
+        string pdbid="XXXX";
+        if (isfile(filename)) cif2fasta(filename,pdbid);
+        else cerr<<"miss "+filename<<endl;
+        string().swap(filename);
+        string().swap(pdbid);
+        return 0;
     }
     string folder  =argv[1];
     string listfile=argv[2];
