@@ -29,7 +29,12 @@ foreach my $line(`zcat $rootdir/sifts/pdb_pubmed.tsv.gz`)
 my $txt="#pdb\tchain\tassembly\tCCD\tligCha\tligIdx\t";
 $txt.="residueOriginal\tresidueRenumber\tresSeq\tligandSequence\n";
 print "$rootdir/data/rna.tsv\n";
-foreach my $line(`grep -v '^#' $rootdir/data/rna.tsv|cut -f1,2,3`)
+my $cmd="cat $rootdir/data/rna.tsv| grep -v '^#' |cut -f1,2,3";
+if (-s "$rootdir/data/rna.tsv.gz")
+{
+    $cmd="z$cmd";
+}
+foreach my $line(`$cmd`)
 {
     if ($line=~/(\w+)\t(\w+)\t(\d+)/)
     {
