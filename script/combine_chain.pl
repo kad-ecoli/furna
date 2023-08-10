@@ -630,4 +630,21 @@ open(FP,">$rootdir/data/rna.tsv");
 print FP "$txt";
 close(FP);
 
+&gzipFile("$rootdir/data/rna.tsv");
+
 exit();
+
+sub gzipFile
+{
+    my ($filename)=@_;
+    my $oldNum=`zcat $filename.gz 2>/dev/null|wc -l`+0;
+    my $newNum=` cat $filename   |wc -l`+0;
+    if (0.8*$oldNum>$newNum)
+    {
+        print "WARNING! do not update $filename from $oldNum to $newNum entries\n";
+        return;
+    }
+    print "update $filename from $oldNum to $newNum entries\n";
+    system("gzip -f $filename");
+    return;
+}
