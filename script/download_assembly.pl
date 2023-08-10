@@ -27,10 +27,20 @@ foreach my $line(`cut -f1,2 $rootdir/data/rna.tsv|grep -v '^#'`)
             if (!-s "$indir/${pdbid}-assembly$a.cif.gz")
             {
                 &download_assembly("data/assemblies/mmCIF/divided/$divided/${pdbid}-assembly$a.cif.gz", "$indir/${pdbid}-assembly$a.cif.gz");
-                last if (!-s "$indir/${pdbid}-assembly$a.cif.gz");
+                if (!-s "$indir/${pdbid}-assembly$a.cif.gz")
+                {
+                    system("rm $indir/${pdbid}-assembly$a.cif.gz") if (-f "$indir/${pdbid}-assembly$a.cif.gz");
+                    last;
+                }
             }
             print "${pdbid}-assembly$a.cif.gz => $target\n";
             system("cd $outdir; $bindir/cif2pdb $indir/${pdbid}-assembly$a.cif.gz $chainID $target");
+        }
+        if (!-s "$outdir/$target.txt")
+        {
+            $a=0;
+            $indir="$rootdir/pdb/data/structures/divided/mmCIF/$divided";
+            system("cd $outdir; $bindir/cif2pdb $indir/${pdbid}.cif.gz $chainID $target");
         }
     }
 }
