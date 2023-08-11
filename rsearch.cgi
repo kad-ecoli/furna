@@ -72,12 +72,16 @@ if pubmed:
 para='&'.join(para_list)
 
 #### read database data ####
-# pdb:recCha => L resolution rfam rnacentral pubmed ec go_mf go_bp go_cc taxon sequence cssr dssr title
-fp=gzip.open(rootdir+"/data/rna.tsv.gz",'rt')
-chain_dict=dict()
-for line in fp.read().splitlines()[1:]:
+interaction_dict=dict()
+cmd="zcat %s/data/interaction.tsv.gz|grep -v '^#'|cut -f1,2,4|uniq|sort|uniq"%rootdir
+p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+stdout,stderr=p.communicate()
+for line in stdout.decode().splitlines():
     items=line.split('\t')
-    chain_dict[':'.join(items[:2])]=items[2:]
+    key=':'.join(items[:2])
+    if not key in interaction_dict:
+        interaction_dict[key]=[]
+    interaction_dict[key].append(items[2])
 fp.close()
 
 ligand_dict=dict()
@@ -137,47 +141,31 @@ if lig3 in ["peptide","rna","dna"]:
     pageLimit=100
 html_txt=''
 sort_line=[]
-fp=gzip.open(rootdir+"/data/interaction.tsv.gz",'rt')
+fp=gzip.open(rootdir+"/data/rna.tsv.gz",'rt')
 for line in fp.read().splitlines()[1:]:
 #for line in stdout.decode().splitlines():
     items=line.split('\t')
     pdb       =items[0]
     recCha    =items[1]
-    assembly  =items[2]
-    ccd       =items[3]
-    ligCha    =items[4]
-    ligIdx    =items[5]
-    resOrig   =items[6]
-    resRenu   =items[7]
-    resSeq    =items[8]
-    ligSeq    =items[9]
-    
-    target=pdb+':'+recCha
-    if not target in chain_dict:
-        continue
-    
+    L         =items[2]
+    reso      =items[3]
+    rfam      =items[4]
+    rnacentral=items[5]
+    pmid      =items[6]
+    ec        =items[7]
+    go_mf     =items[8].replace("GO:","")
+    go_bp     =items[9].replace("GO:","")
+    go_cc     =items[10].replace("GO:","")
+    taxon     =items[11]
+    sequence  =items[12]
+    cssr      =items[13]
+    dssr      =items[14]
+    title     =items[15]
+
     if pdbid and pdb!=pdbid:
         continue
-    if chain and recCha!=chain and ligCha!=chain:
+    if chain and recCha!=chain:
         continue
-    if len(lig_set) and not ccd in lig_set:
-        continue
-
-    items     =chain_dict[pdb+':'+recCha]
-    L         =items[0]
-    reso      =items[1]
-    rfam      =items[2]
-    rnacentral=items[3]
-    pmid      =items[4]
-    ec        =items[5]
-    go_mf     =items[6].replace("GO:","")
-    go_bp     =items[7].replace("GO:","")
-    go_cc     =items[8].replace("GO:","")
-    taxon     =items[9]
-    sequence  =items[10]
-    cssr      =items[11]
-    dssr      =items[12]
-    title     =items[13]
 
     if got:
         if got=='0' and not go_mf+go_bp+go_cc:
@@ -196,9 +184,7 @@ for line in fp.read().splitlines()[1:]:
     if txn and not txn in taxon.split(','):
         continue
 
-    items=(pdb,recCha,assembly,ccd,ligCha,ligIdx,
-        resOrig,resRenu,resSeq,ligSeq,
-        L,reso,rfam,rnacentral,pmid,ec,go_mf,go_bp,go_cc,
+    items=(pdb,recCha,L,reso,rfam,rnacentral,pmid,ec,go_mf,go_bp,go_cc,
         taxon,sequence,cssr,dssr,title)
     if outfmt=='txt':
         html_txt+='\t'.join(items)+'\n'
@@ -207,8 +193,6 @@ for line in fp.read().splitlines()[1:]:
             sort_line.append((reso,items))
         elif order=="rnacentral":
             sort_line.append((rnacentral,items))
-        elif order=="lig3":
-            sort_line.append((ccd,items))
         else:
             sort_line.append((pdb+recCha,items))
 fp.close()
@@ -239,28 +223,20 @@ for l in range(totalNum):
 
     pdb       =items[0]
     recCha    =items[1]
-    assembly  =items[2]
-    ccd       =items[3]
-    ligCha    =items[4]
-    ligIdx    =items[5]
-    resOrig   =items[6]
-    resRenu   =items[7]
-    resSeq    =items[8]
-    ligSeq    =items[9]
-    L         =items[10]
-    reso      =items[11]
-    rfam      =items[12]
-    rnacentral=items[13]
-    pmid      =items[14]
-    ec        =items[15]
-    go_mf     =items[16]
-    go_bp     =items[17]
-    go_cc     =items[18]
-    taxon     =items[19]
-    sequence  =items[20]
-    cssr      =items[21]
-    dssr      =items[22]
-    title     =items[23]
+    L         =items[2]
+    reso      =items[3]
+    rfam      =items[4]
+    rnacentral=items[5]
+    pmid      =items[6]
+    ec        =items[7]
+    go_mf     =items[8].replace("GO:","")
+    go_bp     =items[9].replace("GO:","")
+    go_cc     =items[10].replace("GO:","")
+    taxon     =items[11]
+    sequence  =items[12]
+    cssr      =items[13]
+    dssr      =items[14]
+    title     =items[15]
     
     if ec:
         ec_list=ec.split(',')
@@ -327,17 +303,12 @@ for l in range(totalNum):
     name      =""
     ccd_http  =ccd
     reso="("+reso+")"
-    if lig3 in ["protein","rna","dna"]:
-        ccd_http='<pre>\n'+'\n'.join(textwrap.wrap(ligSeq,50))+'</pre>'
-    else:
-        if ccd in ligand_dict:
-            name=';\n'.join(ligand_dict[ccd].split(';'))
-            ccd_http='<span title="%s">%s</span>'%(name,ccd)
-        elif ccd in ["protein","rna","dna"]:
-            name='\n'.join(textwrap.wrap(ligSeq,50))
-            ccd_http='<span title="%s">%s</span>'%(name,ccd)
-        ccd_http='<a href="sym.cgi?code=%s" target=_blank>%s</a>'%(
-            ccd,ccd_http)
+    ligand_list=[]
+    key=pdb+':'+recCha
+    if key in interaction_dict:
+        for ccd in interaction_dict[key]:
+            ligand_list.append(ccd)
+    ccd_http='<br>'.join(ligand_list)
     
     bgcolor=''
     if l%2:
@@ -346,24 +317,26 @@ for l in range(totalNum):
 <tr %s ALIGN=center>
     <td>%d</td>
     <td><span title="%s"><a href="https://rcsb.org/structure/%s" target=_blank>%s:%s</a><br>%s</span></td>
-    <td><span title="%s"><a href="pdb.cgi?pdb=%s&chain=%s&ligidx=%s&ligcha=%s" target=_blank>%s</span></td>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
     <td style="word-wrap: break-word">%s</td>
-    <td>%s</td>
-    <td>%s</td>
-    <td>%s</td>
-    <td>%s</td>
-    <td>%s</td>
 </tr>
 '''%(bgcolor,
     l+1,
     title,pdb,pdb,recCha,reso,
-    resOrig,pdb,recCha,ligIdx,ligCha,ligCha+':'+ligIdx,
-    ccd_http,
+    ec,
     go,
     rnacentral,
     rfam,
     taxon,
     pmid,
+    ccd_http,
+    '<br>'.join(textwrap.wrap(sequence,50))
     )
 fp.close()
 
@@ -376,13 +349,6 @@ Resolution -1.00 means the resolution is unavailable, e.g., for NMR structures.<
 <li>Click <strong>Site #</strong> to view the binding site structure.
 Hover over <strong>Site #</strong> to view the binding residues.</li>
 '''%(para,totalNum))
-if lig3 in ["peptide","rna","dna"]:
-    print("<li>The <strong>sequence</strong> is converted from residues with experimentally determined coordinates in the structure; residues not observed in the 3D structure are excluded.</li>")
-else:
-    print("<li>Hover over <strong>Ligand</strong> to view the full ligand name. Click <strong>Ligand</strong> to view the 2D diagram and other detail information of the ligand.</li>")
-print('''
-<li>Hover over <strong>GO terms</strong> to view all GO terms.
-''')
 
 
 print(('''<p></p>
@@ -428,51 +394,27 @@ for p in range(1,totalPage+1):
         print('<option value="%d">%d</option>'%(p,p))
 print('''</select>
 <input type=hidden name=pdbid   value='%s'>
-<input type=hidden name=lig3    value='%s'>
 <input type=hidden name=rcl     value='%s'>
 <input type=hidden name=ecn     value='%s'>
 <input type=hidden name=got     value='%s'>
 <input type=hidden name=ligname value='%s'>
 <input type=hidden name=pubmed  value='%s'>
-</form></center><br>'''%(pdbid,lig3,rcl,ecn,got,ligname,pubmed))
+</form></center><br>'''%(pdbid,rcl,ecn,got,ligname,pubmed))
 
 
-if lig3 in ["protein","rna","dna"]:
-    print('''
-<style>
-div.w {
-  word-wrap: break-word;
-}
-</style>
-
-<table border="0" align=center width=100%>    
-<tr BGCOLOR="#FF9900">
-    <th ALIGN=center><strong> # </strong></th>
-    <th ALIGN=center><strong> PDB<br>(resolution) </strong></th>
-    <th ALIGN=center><strong> Site<br># </strong></th>
-    <th ALIGN=center><strong>''')
-    print(lig3.upper() if lig3!="protein" else "Protein")
-    print('''<br>sequence</strong> </th>           
-    <th ALIGN=center><strong> GO<br>terms </strong> </th>           
-    <th ALIGN=center><strong> RNAcentral </strong> </th>           
-    <th ALIGN=center><strong> Rfam </strong> </th>           
-    <th ALIGN=center><strong> Taxon </strong> </th>           
-    <th ALIGN=center><strong> PubMed </strong> </th>           
-</tr><tr ALIGN=center>
-''')
-else:
-    print('''  
+print('''  
 <table border="0" align=center width=100%>    
 <tr BGCOLOR="#FF9900">
     <th ALIGN=center><strong> # </strong></th>
     <th ALIGN=center><strong> PDB<br>(Resolution &#8491;) </strong></th>
-    <th ALIGN=center><strong> Site # </strong></th>
-    <th ALIGN=center><strong> Ligand </strong> </th>           
-    <th ALIGN=center><strong> GO terms </strong> </th>           
+    <th ALIGN=center><strong> EC number </strong> </th>           
+    <th ALIGN=center><strong> GO term </strong> </th>           
     <th ALIGN=center><strong> RNAcentral </strong> </th>           
     <th ALIGN=center><strong> Rfam </strong> </th>           
     <th ALIGN=center><strong> Taxon </strong> </th>           
     <th ALIGN=center><strong> PubMed </strong> </th>           
+    <th ALIGN=center><strong> Ligand </strong> </th>           
+    <th ALIGN=center><strong> Sequence </strong> </th>           
 </tr><tr ALIGN=center>
 ''')
 print(html_txt)

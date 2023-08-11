@@ -214,11 +214,11 @@
 <div id="menunav">
 <ul id="navbar">
     <li><a href=".">HOME</a></li>
-    <li><a href="index.cgi#by_name">SEARCH</a>
+    <li><a href="index.html#by_name">SEARCH</a>
         <ul>
-        <li><a href="index.cgi#by_name">Search by name</a></li>
-        <li><a href="index.cgi#by_seq">Search by sequence</a></li>
-        <li><a href="index.cgi#by_struct">Search by structure</a></li>
+        <li><a href="index.html#by_name">Search by name</a></li>
+        <!--<li><a href="index.html#by_seq">Search by sequence</a></li>-->
+        <!--<li><a href="index.html#by_struct">Search by structure</a></li>-->
         </ul>
     </li>
     <li><a href="rsearch.cgi">RNA</a>
@@ -315,7 +315,6 @@ function example_pdbfile()
 }
 </script>
 
-<!--
 <p>
 <a name="by_name">
 <h1><u>Search database by name</u></h1>
@@ -325,39 +324,43 @@ function example_pdbfile()
 <table width=100%>
     <tr>
         <td>PDB ID</td>
-        <td><input type="text" name="pdbid" value="" class="form-left" placeholder="Example: 1a69" size=60></td>
+        <td><input type="text" name="pdbid" value="" class="form-left" placeholder="Example: 1na2" size=60></td>
     </tr>
     <tr>
         <td>PDB Chain ID</td>
         <td><input type="text" name="chain" value="" class="form-left" placeholder="Example: A" size=60></td>
     </tr>
     <tr>
-        <td><span title="Ligand ID can either be the upper case 3-letter Chemical Component Dictionary (CCD) code used by the PDB database, or one of the followings: metal, regular, rna, dna, peptide">Ligand ID</span></td>
-	<td><span title="Ligand ID can either be the upper case 3-letter Chemical Component Dictionary (CCD) code used by the PDB database, or one of the followings: metal, regular, rna, dna, peptide"><input type="text" name="lig3" value="" class="form-left" placeholder="Example: C2E, or one of the following: metal, regular, rna, dna, peptide" size=60> </span></td>
+        <td><span title="Ligand ID can either be the upper case 3-letter Chemical Component Dictionary (CCD) code used by the PDB database, or one of the followings: metal, regular, rna, dna, protein">Ligand ID</span></td>
+	<td><span title="Ligand ID can either be the upper case 3-letter Chemical Component Dictionary (CCD) code used by the PDB database, or one of the followings: metal, regular, rna, dna, protein"><input type="text" name="lig3" value="" class="form-left" placeholder="Example: GTP, or one of the following: metal, regular, rna, dna, peptide" size=60> </span></td>
     </tr>
     <tr>
-        <td>UniProt accession</td>
-        <td><input type="text" name="uniprot" value="" class="form-left" placeholder="Example: P0ABP8" size=60></td>
+        <td>RNAcentral accession</td>
+        <td><input type="text" name="rcl" value="" class="form-left" placeholder="Example: URS000080DF2D" size=60></td>
+    </tr>
+    <tr>
+        <td>Rfam family</td>
+        <td><input type="text" name="rfm" value="" class="form-left" placeholder="Example: RF01381" size=60></td>
+    </tr>
+    <tr>
+        <td>Taxon</td>
+        <td><input type="text" name="txn" value="" class="form-left" placeholder="Example: 9606" size=60></td>
     </tr>
     <tr>
         <td>EC number</td>
-        <td><input type="text" name="ecn" value="" class="form-left" placeholder="Example: 2.4.2.1" size=60></td>
+        <td><input type="text" name="ecn" value="" class="form-left" placeholder="Example: 2.7.7.49" size=60></td>
     </tr>
     <tr>
         <td><span title="To search proteins with GO terms in the Molecular Function, Biological Process and Cellular Component aspects, use terms GO:0003674, GO:0008150 and GO:0005575, respectively.">GO term</span></td>
-        <td><span title="To search proteins with GO terms in the Molecular Function, Biological Process and Cellular Component aspects, use terms GO:0003674, GO:0008150 and GO:0005575, respectively."><input type="text" name="got" value="" class="form-left" placeholder="Example: GO:0042802, or just 0042802" size=60></span></td>
+        <td><span title="To search proteins with GO terms in the Molecular Function, Biological Process and Cellular Component aspects, use terms GO:0003674, GO:0008150 and GO:0005575, respectively."><input type="text" name="got" value="" class="form-left" placeholder="Example: GO:0003720, or just 0003720" size=60></span></td>
     </tr>
-    <tr>
-        <td>Ligand name </td>
-        <td><input type="text" name="ligname" value="" class="form-left" placeholder="Example: C-DI-GMP" size=60></td>
-    </tr>
+    <!--<tr>-->
+        <!--<td>Ligand name </td>-->
+        <!--<td><input type="text" name="ligname" value="" class="form-left" placeholder="Example: GTP" size=60></td>-->
+    <!--</tr>-->
     <tr>
         <td>PubMed ID </td>
         <td><input type="text" name="pubmed" value="" class="form-left" placeholder="Example: 9653038" size=60></td>
-    </tr>
-    <tr>
-        <td>With binding affinity data&nbsp;</td>
-        <td><input type="checkbox" name="baff" value="baff">Check this box to restrict search to entries with binding affinity from MOAD, PDBbind-CN, BindingDB, or manual survey of original literature.</td>
     </tr>
 </table>
 <INPUT TYPE=SUBMIT VALUE="Search">
@@ -366,7 +369,7 @@ function example_pdbfile()
 </FORM>
 <p></p>
 
-
+<!--
 <p>
 <a name="by_seq">
 <h1><u>Search database by sequence</u></h1>
