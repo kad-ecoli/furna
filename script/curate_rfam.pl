@@ -7,6 +7,33 @@ my $rootdir = dirname($bindir);
 
 print "curate Rfam\n";
 system("mkdir -p $rootdir/Rfam");
+
+my @rfam_list;
+my %rfam_dict;
+my $rfam;
+foreach my $line(`zcat $rootdir/Rfam/Rfam.cm.gz |grep -P '(^ACC )|(^DESC )'`)
+{
+    chomp($line);
+    if ($line=~/^ACC\s+(RF\d+)/)
+    {
+        $rfam="$1";
+        push(@rfam_list, ($rfam)) if (!exists($rfam_dict{$rfam}));
+    }
+    elsif ($line=~/^DESC\s+([\s\S]+)/)
+    {
+        $rfam_dict{$rfam}="$1";
+    }
+}
+my $txt;
+foreach my $rfam(@rfam_list)
+{
+    $txt.="$rfam\t$rfam_dict{$rfam}\n";
+}
+open(FP,">$rootdir/data/rfam.tsv");
+print FP $txt;
+close(FP);
+&gzipFile("$rootdir/data/rfam.tsv");
+
 system("rm $rootdir/Rfam/rna_nr.split.*");
 system("zcat $rootdir/Rfam/Rfam.pdb.gz | cut -f2,3|sed 's/\t//g'|sort|uniq | $bindir/fasta2miss - $rootdir/data/rna.fasta - $rootdir/Rfam/Rfam.pdb.fasta");
 system("cat $rootdir/data/rna.fasta|grep '>'|sed 's/>//g' | $bindir/fasta2miss - $rootdir/Rfam/Rfam.pdb.fasta $rootdir/Rfam/Rfam.pdb.miss.list - > /dev/null");
@@ -36,3 +63,18 @@ if (-s "$rootdir/Rfam/rna_nr.tblout")
 }
 
 exit();
+
+sub gzipFile
+{
+    my ($filename)=@_;
+    my $oldNum=`zcat $filename.gz 2>/dev/null|wc -l`+0;
+    my $newNum=` cat $filename   |wc -l`+0;
+    if (0.8*$oldNum>$newNum)
+    {
+        print "WARNING! do not update $filename from $oldNum to $newNum entries\n";
+        return;
+    }
+    print "update $filename from $oldNum to $newNum entries\n";
+    system("gzip -f $filename");
+    return;
+}
