@@ -28,14 +28,42 @@ if (-s "$rootdir/data/rna.tsv.gz")
 {
     $cmd="z$cmd";
 }
+my $txt;
 foreach my $pmid(`$cmd`)
 {
     chomp($pmid);
-    next if (-s "$pubmeddir/$pmid.txt");
-    &download_pubmed($pmid,$pubmeddir);
+    if (!-s "$pubmeddir/$pmid.txt")
+    {
+        &download_pubmed($pmid,$pubmeddir);
+    }
+    if (-s "$pubmeddir/$pmid.txt")
+    {
+        my $title=`head -1 $pubmeddir/$pmid.txt`;
+        $txt.="$pmid\t$title";
+    }
 }
+open(FP,">$rootdir/data/pubmed.tsv");
+print FP "$txt";
+close(FP);
+
+&gzipFile("$rootdir/data/pubmed.tsv");
 
 exit();
+
+sub gzipFile
+{
+    my ($filename)=@_;
+    my $oldNum=`zcat $filename.gz 2>/dev/null|wc -l`+0;
+    my $newNum=` cat $filename   |wc -l`+0;
+    if (0.8*$oldNum>$newNum)
+    {
+        print "WARNING! do not update $filename from $oldNum to $newNum entries\n";
+        return;
+    }
+    print "update $filename from $oldNum to $newNum entries\n";
+    system("gzip -f $filename");
+    return;
+}
 
 sub download_pubmed
 {
