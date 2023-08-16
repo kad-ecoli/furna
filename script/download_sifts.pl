@@ -7,7 +7,11 @@ my $rootdir = dirname($bindir);
 
 print "download sifts\n";
 system("mkdir -p $rootdir/sifts");
-&download_from_sifts("pdb_pubmed.tsv.gz", "sifts/pdb_pubmed.tsv.gz");
+&download_from_sifts("pdb_pubmed.tsv.gz",         "sifts/pdb_pubmed.tsv.gz");
+&download_from_sifts("pdb_chain_uniprot.tsv.gz",  "sifts/pdb_chain_uniprot.tsv.gz");
+&download_from_sifts("pdb_chain_taxonomy.tsv.gz", "sifts/pdb_chain_taxonomy.tsv.gz");
+&download_from_sifts("pdb_chain_go.tsv.gz",       "sifts/pdb_chain_go.tsv.gz");
+&download_from_sifts("pdb_chain_enzyme.tsv.gz",   "sifts/pdb_chain_enzyme.tsv.gz");
 
 exit();
 

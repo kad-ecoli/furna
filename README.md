@@ -17,7 +17,7 @@ mkdir ../graphviz
 make
 make install
 cd ..
-rm graphviz-6.0.2.tar.gz
+rm -rf graphviz-6.0.2.tar.gz graphviz-6.0.2
 ```
 
 ### 1. Download raw data ###
