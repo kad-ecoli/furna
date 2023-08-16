@@ -80,6 +80,13 @@ for line in fp.read().splitlines()[1:]:
     chain_dict[':'.join(items[:2])]=items[2:]
 fp.close()
 
+pubmed_dict=dict()
+fp=gzip.open(rootdir+"/data/pubmed.tsv.gz",'rt')
+for line in fp.read().splitlines()[1:]:
+    items=line.split('\t')
+    pubmed_dict[items[0]]=items[1]
+fp.close()
+
 ligand_dict=dict()
 fp=gzip.open(rootdir+"/data/ligand.tsv.gz",'rt')
 for line in fp.read().splitlines()[1:]:
@@ -306,6 +313,9 @@ for l in range(totalNum):
         pubmed_list=[]
         for p in pmid.split(','):
             pubmed_list.append("<a href=https://pubmed.ncbi.nlm.nih.gov/%s target=_blank>%s</a>"%(p,p))
+            if p in pubmed_dict:
+                pubmed_list[-1]='<span title="'+pubmed_dict[p]+ \
+                    '">'+pubmed_list[-1]+"</span>"
         pmid='<br>'.join(pubmed_list)
     else:
         pmid="N/A"

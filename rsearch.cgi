@@ -84,6 +84,13 @@ for line in stdout.decode().splitlines():
     interaction_dict[key].append(items[2])
 fp.close()
 
+pubmed_dict=dict()
+fp=gzip.open(rootdir+"/data/pubmed.tsv.gz",'rt')
+for line in fp.read().splitlines()[1:]:
+    items=line.split('\t')
+    pubmed_dict[items[0]]=items[1]
+fp.close()
+
 ligand_dict=dict()
 fp=gzip.open(rootdir+"/data/ligand.tsv.gz",'rt')
 for line in fp.read().splitlines()[1:]:
@@ -253,20 +260,13 @@ for l in range(totalNum):
     go=''
     if go_mf+go_bp+go_cc:
         go_list=[]
-        if go_mf:
-            go_list+=["GO:"+g for g in go_mf.split(',')]
-        if go_bp:
-            go_list+=["GO:"+g for g in go_bp.split(',')]
-        if go_cc:
-            go_list+=["GO:"+g for g in go_cc.split(',')]
-
-        go='<span title="'
-        for g in go_list:
-            if g in go2name_dict:
-                go+=g+' '+go2name_dict[g]+'\n'
-            else:
-                go+=g+'\n'
-        go=go[:-1]+'">'+go_list[0]+"...</span>"
+        for g in (','.join((go_mf,go_bp,go_cc))).split(','):
+            if not g:
+                continue
+            g="GO:"+g
+            g='<span title="%s"><a href=https://www.ebi.ac.uk/QuickGO/term/%s target=_blank>%s</a></span>'%(go2name_dict[g],g,g)
+            go_list+=[g]
+        go='<br>'.join(go_list)
     else:
         go="N/A"
     if rnacentral:
@@ -282,6 +282,9 @@ for l in range(totalNum):
         pubmed_list=[]
         for p in pmid.split(','):
             pubmed_list.append("<a href=https://pubmed.ncbi.nlm.nih.gov/%s target=_blank>%s</a>"%(p,p))
+            if p in pubmed_dict:
+                pubmed_list[-1]='<span title="'+pubmed_dict[p]+ \
+                    '">'+pubmed_list[-1]+"</span>"
         pmid='<br>'.join(pubmed_list)
     else:
         pmid="N/A"
