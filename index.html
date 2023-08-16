@@ -221,21 +221,16 @@
         <!--<li><a href="index.html#by_struct">Search by structure</a></li>-->
         </ul>
     </li>
-    <li><a href="rsearch.cgi">RNA</a>
+    <li><a href="search.cgi">BROWSE</a>
         <ul>
-        <li><a href="rsearch.cgi">Browse all RNAs</a></li>
-        <li><a href="rsearch.cgi?got=0">Browse all RNAs with Gene Ontology terms</a></li>
-        <li><a href="rsearch.cgi?ecn=0">Browse all RNAs with Enzyme Commission numbers</a></li>
-        </ul>
-    </li>
-    <li><a href="qsearch.cgi">INTERACTION</a>
-        <ul>
-        <li><a href="qsearch.cgi">Browse all interactions</a></li>
-        <li><a href="qsearch.cgi?lig3=regular">Browse all regular ligand-RNA interactions</a></li>
-        <li><a href="qsearch.cgi?lig3=metal">Browse all metal ion-RNA interactions</a></li>
-        <li><a href="qsearch.cgi?lig3=protein">Browse all protein-RNA interactions</a></li>
-        <li><a href="qsearch.cgi?lig3=rna">Browse all RNA-RNA interactions</a></li>
-        <li><a href="qsearch.cgi?lig3=dna">Browse all DNA-RNA interactions</a></li>
+        <li><a href="search.cgi">Browse all entries</a></li>
+        <li><a href="search.cgi?ecn=0">Browse all RNAs with EC numbers</a></li>
+        <li><a href="search.cgi?got=0">Browse all RNAs with GO terms</a></li>
+        <li><a href="search.cgi?lig3=regular">Browse all regular ligand-RNA interactions</a></li>
+        <li><a href="search.cgi?lig3=metal">Browse all metal ion-RNA interactions</a></li>
+        <li><a href="search.cgi?lig3=protein">Browse all protein-RNA interactions</a></li>
+        <li><a href="search.cgi?lig3=rna">Browse all RNA-RNA interactions</a></li>
+        <li><a href="search.cgi?lig3=dna">Browse all DNA-RNA interactions</a></li>
         </ul>
     </li>
     <li><a href="ligand.cgi">LIGAND</a></li>
@@ -320,7 +315,7 @@ function example_pdbfile()
 <h1><u>Search database by name</u></h1>
 </a>
 </p>
-<FORM name="qsearchForm" METHOD=POST ACTION="qsearch.cgi"  onsubmit="return checkform(this);">
+<FORM name="qsearchForm" METHOD=POST ACTION="search.cgi"  onsubmit="return checkform(this);">
 <table width=100%>
     <tr>
         <td>PDB ID</td>
@@ -333,6 +328,10 @@ function example_pdbfile()
     <tr>
         <td><span title="Ligand ID can either be the upper case 3-letter Chemical Component Dictionary (CCD) code used by the PDB database, or one of the followings: metal, regular, rna, dna, protein">Ligand ID</span></td>
 	<td><span title="Ligand ID can either be the upper case 3-letter Chemical Component Dictionary (CCD) code used by the PDB database, or one of the followings: metal, regular, rna, dna, protein"><input type="text" name="lig3" value="" class="form-left" placeholder="Example: GTP, or one of the following: metal, regular, rna, dna, peptide" size=60> </span></td>
+    </tr>
+    <tr>
+        <td>Ligand name</td>
+        <td><input type="text" name="ligname" value="" class="form-left" placeholder="Example: GUANOSINE-5'-TRIPHOSPHATE" size=60></td>
     </tr>
     <tr>
         <td>RNAcentral accession</td>

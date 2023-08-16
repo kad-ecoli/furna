@@ -24,4 +24,5 @@ script/download_pubmed.pl
 script/download_assembly.pl
 script/combine_interaction.pl
 script/download_ligand.pl
+script/download_taxon.pl
 ```
