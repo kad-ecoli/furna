@@ -347,15 +347,18 @@ for l in range(totalNum):
             if not ccd in ccd_dict:
                 ccd_list.append(ccd)
                 ccd_dict[ccd]=[]
-            spantitle="Binding residues: "+items[4]
+            spantitle=ccd
             if ccd in ["protein","rna","dna"]:
-                spantitle=" sequence: "+items[-1]+'\n'+spantitle
                 if ccd=="protein":
-                    spantitle="Protein"+spantitle
+                    spantitle="Protein"
                 else:
-                    spantitle=ccd.upper()+spantitle
+                    spantitle=ccd.upper()
+                spantitle+=" sequence: "+items[-1]
             elif ccd in ligand_dict:
-                spantitle=ligand_dict[ccd]+'\n'+spantitle
+                spantitle=ligand_dict[ccd]
+            else:
+                spantitle=ccd
+            spantitle+="\nChain ID of the ligand: %s\nResidue sequence number of the ligand: %s\nBinding nucleotides on the RNA receptor: %s\n"%(items[2],items[6],items[4])
             ccd_dict[ccd].append('''
                 <a href=pdb.cgi?pdbid=%s&chain=%s&lig3=%s&ligCha=%s&ligIdx=%s>
                 <span title="%s">%s:%s:%s</span></a>
@@ -412,10 +415,10 @@ Download all results in tab-seperated text for
 <li>Hover over <strong>Rfam</strong> to view names of Rfam families.</li>
 <li>Hover over <strong>PubMed</strong> to view title of the PubMed publications.</li>
 <li>Hover over <strong>Ligand</strong> to view the name of the ligand and the ligand-binding nucleotides on the RNA.</li>
+<p></p>
 '''%(para,totalNum))
 
-
-print(('''<p></p>
+print(('''
 <form name="sform" action="search.cgi">
 Sort results by
 <select name="order" onchange="this.form.submit()">
@@ -437,29 +440,28 @@ Sort results by
 ).replace('value="%s"'%order,
           'value="%s" selected="selected"'%order))
 
-
-print('''<center> 
+navigator='''<center> 
 <a class='hover' href='?&page=1&%s'>&lt&lt</a>
 <a class='hover' href='?&page=%d&%s'>&lt</a>
-'''%(para,page-1,para))
+'''%(para,page-1,para)
 for p in range(page-10,page+11):
     if p<1 or p>totalPage:
         continue
     elif p==page:
-        print(' %d '%(p))
+        navigator+=' %d '%(p)
     else:
-        print('''<a class='hover' href='?&page=%d&%s'>%d</a>'''%(p,para,p))
-print('''
+        navigator+=''' <a class='hover' href='?&page=%d&%s'>%d</a> '''%(p,para,p)
+navigator+='''
 <a class='hover' href='?&page=%d&%s'>&gt</a>
 <a class='hover' href='?&page=last&%s'>&gt&gt</a>
 <form name="pform" action="search.cgi">Go to page <select name="page" onchange="this.form.submit()">
-'''%(page+1,para,para))
+'''%(page+1,para,para)
 for p in range(1,totalPage+1):
     if p==page:
-        print('<option value="%d" selected="selected">%d</option>'%(p,p))
+        navigator+='<option value="%d" selected="selected">%d</option>'%(p,p)
     else:
-        print('<option value="%d">%d</option>'%(p,p))
-print('''</select>
+        navigator+='<option value="%d">%d</option>'%(p,p)
+navigator+='''</select>
 <input type=hidden name=pdbid   value='%s'>
 <input type=hidden name=chain   value='%s'>
 <input type=hidden name=rcl     value='%s'>
@@ -470,9 +472,9 @@ print('''</select>
 <input type=hidden name=pubmed  value='%s'>
 <input type=hidden name=lig3    value='%s'>
 <input type=hidden name=ligname value='%s'>
-</form></center><br>'''%(pdbid,chain,rcl,rfm,txn,ecn,got,pubmed,lig3,ligname))
+</form></center><br>'''%(pdbid,chain,rcl,rfm,txn,ecn,got,pubmed,lig3,ligname)
 
-
+print(navigator)
 print('''  
 <table border="0" width=100%>    
 <tr BGCOLOR="#FF9900" align=left>
@@ -489,6 +491,7 @@ print('''
 ''')
 print(html_txt)
 print("</table>")
+print(navigator)
 if len(html_footer):
     print(html_footer)
 else:
