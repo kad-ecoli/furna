@@ -19,6 +19,11 @@ form    = cgi.FieldStorage()
 page    =form.getfirst("page",'')
 if not page or page=='0':
     page='1'
+order=form.getfirst("order",'').lower().strip().strip("'")
+if not order:
+    order="id"
+elif order=="count":
+    order="freq"
 lig3    = form.getfirst("code",'')
 if not lig3:
     lig3= form.getfirst("lig3",'')
@@ -36,6 +41,8 @@ if not img in ['0','1']:
     img = '0'
 
 para_list=[]
+if order:
+    para_list.append("order=%s"%order)
 if lig3:
     para_list.append("lig3=%s"%lig3)
 if formula:
@@ -59,10 +66,10 @@ else:
     print('''<html>
 <head>
 <link rel="stylesheet" type="text/css" href="page.css" />
-<title>BioLiP</title>
+<title>FURNA</title>
 </head>
 <body bgcolor="#F0FFF0">
-<img src=images/BioLiP1.png ></br>
+<img src=images/furna.png ></br>
 <p><a href=.>[Back to Home]</a></p>
 ''')
 freq_dict=dict()
@@ -127,12 +134,30 @@ print('''
 print('''
 <h4>Browse Ligand</h4>
 <li>Click <strong>#</strong> to view 2D diagram of the ligand.</li>
-<li>The 3-letter <strong>Ligand ID</strong> follows the <a href="https://www.wwpdb.org/data/ccd" target=_blank>Chemical Component Dictionary (CCD)</a> used by the PDB database.
-    When availble, the <strong>Ligand ID</strong> from <a href=https://www.ebi.ac.uk/chembl>ChEMBL</a>, <a href=https://go.drugbank.com>DrugBank</a>, and <a href=https://zinc.docking.org>ZINC</a> databases are also listed in the form of CHEMBL*, DB*, and ZINC*, respectively. Click on the <strong>Ligand ID</strong> to view the ligand at RCSB PDB, ChEMBL, DrugBank or ZINC.</li>
-<li><strong>Count</strong> is the number of BioLiP entries with the ligand. The full statistics is available at <a href=download/lig_frequency.txt>lig_frequency.txt</a>. Click <strong>Count</strong> to search the ligand through BioLiP.</li>
+<li>The 3-letter Ligand <strong>ID</strong> follows the <a href="https://www.wwpdb.org/data/ccd" target=_blank>Chemical Component Dictionary (CCD)</a> used by the PDB database.
+    When availble, the Ligand <strong>ID</strong> from <a href=https://www.ebi.ac.uk/chembl>ChEMBL</a>, <a href=https://go.drugbank.com>DrugBank</a>, and <a href=https://zinc.docking.org>ZINC</a> databases are also listed in the form of CHEMBL*, DB*, and ZINC*, respectively. Click on the Ligand <strong>ID</strong> to view the ligand at RCSB PDB, ChEMBL, DrugBank or ZINC.</li>
+<li><strong>Count</strong> is the number of interactions with the ligand. The full statistics is available at <a href=download/lig_frequency.txt>lig_frequency.txt</a>. Click <strong>Count</strong> to search the ligand through the database.</li>
 <li>If multiple SMILES strings exists for the same ligand, different SMILES are separated by semicolon ";".</li>
 <p></p>
 ''')
+
+print(('''
+<form name="sform" action="ligand.cgi">
+Sort by
+<select name="order" onchange="this.form.submit()">
+    <option value="id">Ligand ID</option>
+    <option value="freq">Counts</option>
+    <option value="name">Ligand name</option>
+<input type=hidden name=code    value='%s'>
+<input type=hidden name=formula  value='%s'>
+<input type=hidden name=inchi    value='%s'>
+<input type=hidden name=inchikey value='%s'>
+<input type=hidden name=smiles   value='%s'>
+<input type=hidden name=ligname  value='%s'>
+<input type=hidden name=img      value='%s'>
+</form>'''%(lig3,formula,inchi,inchikey,smiles,ligname,img)
+).replace('value="%s"'%order,
+          'value="%s" selected="selected"'%order))
 
 fp=gzip.open(rootdir+"/data/metal.tsv.gz",'rt')
 metal_list=[]
@@ -143,14 +168,16 @@ metal_set=set(metal_list)
 
 fp=gzip.open(rootdir+"/data/ligand.tsv.gz",'rt')
 formula_query_set=set(formula.split())
-lines=[]
+#lines=[]
+sort_lines=[]
 pageLimit=200
 for line in fp.read().splitlines()[1:]:
     items=line.split('\t')
+    ccd=items[0]
     if lig3:
-        if lig3=="metal" and not items[0] in metal_set:
+        if lig3=="metal" and not ccd in metal_set:
             continue
-        elif lig3=="regular" and items[0] in metal_set:
+        elif lig3=="regular" and ccd in metal_set:
             continue
         elif not lig3 in ["metal","regular"] and not lig3 in items[:1]+items[6:]:
             continue
@@ -186,11 +213,21 @@ for line in fp.read().splitlines()[1:]:
         smiles_list.append(items[4][start:end])
     items[4]='<br>'.join(smiles_list)
     items[4].replace('; ',';<br>')
-    lines.append(items)
-    if page!="last" and len(lines)>pageLimit*int(page):
-        continue
+    if order=="name":
+        sort_lines.append([items[5]]+items)
+    elif order=="freq":
+        if ccd in freq_dict:
+            sort_lines.append([-int(freq_dict[ccd])]+items)
+        else:
+            sort_lines.append([0]+items)
+    else:
+        sort_lines.append([ccd]+items)
+    #lines.append(items)
+    #if page!="last" and len(lines)>pageLimit*int(page):
+        #continue
+sort_lines.sort()
 
-totalNum=len(lines)
+totalNum=len(sort_lines)
 totalPage=1+int(totalNum/pageLimit)
 if page=="last":
     page=totalPage
@@ -252,7 +289,8 @@ print('''<table border="0" align=center width=100%>
 </tr><tr ALIGN=center>
 ''')
 
-for l,items in enumerate(lines):
+for l,items in enumerate(sort_lines):
+    items=items[1:]
     if l<pageLimit*(int(page)-1) or l>=pageLimit*int(page):
         continue
     bgcolor=''
