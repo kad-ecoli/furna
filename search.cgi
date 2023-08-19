@@ -150,7 +150,7 @@ enzyme_dict=dict()
 fp=gzip.open(rootdir+"/data/enzyme.tsv.gz",'rt')
 for line in fp.read().splitlines():
     e,name=line.split('\t')
-    enzyme_dict[e]=name
+    enzyme_dict[e]=name.rstrip('.')
 fp.close()
 
 go2name_dict=dict()
@@ -218,6 +218,8 @@ for line in fp.read().splitlines()[1:]:
             sort_line.append((reso,items))
         elif order=="rnacentral":
             sort_line.append((rnacentral,items))
+        elif order=="l":
+            sort_line.append((int(L),items))
         else:
             sort_line.append((pdb+recCha,items))
 fp.close()
@@ -241,6 +243,7 @@ if page<1:
 elif page>totalPage:
     page=totalPage
 
+maxwidth=30
 for l in range(totalNum):
     if l<pageLimit*(int(page)-1) or l>=pageLimit*(int(page)):
         continue
@@ -272,7 +275,10 @@ for l in range(totalNum):
             if not e in enzyme_dict:
                 ec+="<a href=https://enzyme.expasy.org/EC/%s target=_blank>EC:%s</a>"%(e,e)
             else:
-                ec+='<a href=https://enzyme.expasy.org/EC/%s target=_blank><span title="%s">EC:%s</span></a>'%(e,enzyme_dict[e],e)
+                shortname=enzyme_dict[e][:maxwidth]
+                if len(enzyme_dict[e])>maxwidth:
+                    shortname=shortname[:-3]+"..."
+                ec+='<span title="%s"><a href=https://enzyme.expasy.org/EC/%s target=_blank>EC:%s</a> %s</span>'%(enzyme_dict[e],e,e,shortname)
     go=''
     if go_mf+go_bp+go_cc:
         go_list=[]
@@ -280,7 +286,10 @@ for l in range(totalNum):
             if not g:
                 continue
             g="GO:"+g
-            g='<span title="%s"><a href=https://www.ebi.ac.uk/QuickGO/term/%s target=_blank>%s</a></span>'%(go2name_dict[g],g,g)
+            shortname=go2name_dict[g][:maxwidth]
+            if len(go2name_dict[g])>maxwidth:
+                shortname=shortname[:-3]+"..."
+            g='<span title="%s"><a href=https://www.ebi.ac.uk/QuickGO/term/%s target=_blank>%s</a> %s</span>'%(go2name_dict[g],g,g,shortname)
             go_list+=[g]
         go='<br>'.join(go_list)
     if rnacentral:
@@ -359,11 +368,31 @@ for l in range(totalNum):
             else:
                 spantitle=ccd
             spantitle+="\nChain ID of the ligand: %s\nResidue sequence number of the ligand: %s\nBinding nucleotides on the RNA receptor: %s\n"%(items[2],items[6],items[4])
-            ccd_dict[ccd].append('''
-                <a href=pdb.cgi?pdbid=%s&chain=%s&lig3=%s&ligCha=%s&ligIdx=%s>
-                <span title="%s">%s:%s:%s</span></a>
-            '''%(pdb,recCha,ccd,items[2],items[3],
-                spantitle,ccd,items[2],items[6].replace(' ','')))
+
+            bs_list=[bs[1:] for bs in items[4].split()]
+            bs_txt=''
+            write_prev=0
+            for b,bs in enumerate(bs_list):
+                if b==0:
+                    bs_txt+=bs
+                else:
+                    if not bs[-1] in "1234567890" or not bs_list[b-1][-1] in "1234567890":
+                        bs_txt+=","+bs
+                    else:
+                        if int(bs_list[b-1])+1==int(bs):
+                            if b+1==len(bs_list) or not bs_list[b+1][-1] in "1234567890" or int(bs)+1!=int(bs_list[b+1]):
+                                bs_txt+="~"+bs
+                            else:
+                                pass
+                        else:
+                            bs_txt+=","+bs
+
+            ccd_dict[ccd].append('''<span title="%s">
+            <a href=pdb.cgi?pdbid=%s&chain=%s&lig3=%s&ligCha=%s&ligIdx=%s>
+            %s:%s:%s</a> %s</span>'''%(spantitle,
+                pdb,recCha,ccd,items[2],items[3],
+                ccd,items[2],items[6].replace(' ',''),
+                '<br>'.join(textwrap.wrap(bs_txt,maxwidth))))
 
         for ccd in ccd_list:
             ligand_list.append('<br>'.join(ccd_dict[ccd]))
@@ -386,32 +415,31 @@ for l in range(totalNum):
     <td style="word-wrap: break-word">
         <span title="%s"><a href="https://rcsb.org/structure/%s" target=_blank>%s</a>:%s<br>%s</span><br>
     </td>
+    <td><span title=">sequence\n%s">%s</span></td>
     <td>%s</td>
     <td>%s</td>
     <td>%s</td>
     <td>%s</td>
     <td>%s</td>
     <td>%s</td>
-    <td style="word-wrap: break-word"><span title="Length=%s">%s</span></td>
 </tr>
 '''%(bgcolor,
     pdb,recCha,l+1,
     title,pdb,pdb,recCha,reso,
+    '\n'.join(textwrap.wrap(sequence,50)),L,
     ecgo,
     rnacentral,
     rfam,
     taxon,
     pmid,
     ccd_http,
-    L,'<br>'.join(textwrap.wrap(sequence,50)),
     )
 fp.close()
 
 print('''
 Download all results in tab-seperated text for 
-<a href="?outfmt=txt&%s" download="database.txt">%d receptor-ligand interactions</a>.<br>
+<a href="?outfmt=txt&%s" download="database.txt">%d RNAs</a>.<br>
 <li>Hover over <strong>PDB</strong> to view the title of the structure.</li>
-<li>Hover over <strong>EC number &amp; GO term</strong> to view names of the Enzyme Commission numbers and Gene Ontology terms.</li>
 <li>Hover over <strong>Rfam</strong> to view names of Rfam families.</li>
 <li>Hover over <strong>PubMed</strong> to view title of the PubMed publications.</li>
 <li>Hover over <strong>Ligand</strong> to view the name of the ligand and the ligand-binding nucleotides on the RNA.</li>
@@ -423,7 +451,7 @@ print(('''
 Sort results by
 <select name="order" onchange="this.form.submit()">
     <option value="pdbid">PDB ID</option>
-    <option value="lig3">Ligand ID</option>
+    <option value="l">Length</option>
     <option value="rcl">RNAcentral</option>
     <option value="reso">Resolution</option>
 <input type=hidden name=pdbid   value='%s'>
@@ -480,13 +508,13 @@ print('''
 <tr BGCOLOR="#FF9900" align=left>
     <th><strong> # </strong></th>
     <th><strong> PDB<br>(Resolution)</strong></th>
+    <th><strong> Length</strong></th>
     <th><strong> EC number<br>&amp; GO term </strong> </th>           
     <th><strong> RNAcentral </strong> </th>           
     <th><strong> Rfam </strong> </th>           
     <th><strong> Taxon </strong> </th>           
     <th><strong> PubMed </strong> </th>           
     <th><strong> Ligand </strong> </th>           
-    <th><strong> RNA<br>sequence </strong> </th>           
 </tr><tr>
 ''')
 print(html_txt)
