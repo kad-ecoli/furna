@@ -51,6 +51,34 @@ foreach my $line(`zcat $rootdir/sifts/pdb_chain_enzyme.tsv.gz|cut -f1,2,4|uniq`)
     }
 }
 
+my %alt_id_dict;
+print "$rootdir/goa/alt_id.csv\n";
+foreach my $line(`cat $rootdir/goa/alt_id.csv`)
+{
+    if ($line=~/(GO:\d+)\t(GO:\d+)/)
+    {
+        my $oldGOterm="$1";
+        my $newGOterm="$2";
+        if ($oldGOterm ne $newGOterm)
+        {
+            $alt_id_dict{$oldGOterm}=$newGOterm;
+        }
+    }
+}
+
+my %aspect_dict;
+print "$rootdir/goa/name.csv\n";
+foreach my $line(`cat $rootdir/goa/name.csv`)
+{
+    if ($line=~/^(GO:\d+)\t(\w+)/)
+    {
+        my $GOterm="$1";
+        my $Aspect="$2";
+        $aspect_dict{$GOterm}=$Aspect;
+    }
+}
+
+
 my %go_dict;
 print "$rootdir/sifts/pdb_chain_go.tsv.gz\n";
 foreach my $line(`zcat $rootdir/sifts/pdb_chain_go.tsv.gz|cut -f1,2,6|sort|uniq`)
@@ -62,6 +90,11 @@ foreach my $line(`zcat $rootdir/sifts/pdb_chain_go.tsv.gz|cut -f1,2,6|sort|uniq`
         my $go="$3";
         my $target="$pdbid:$chainid";
         next if (!exists($target_dict{$target}));
+        if (exists($alt_id_dict{$go}))
+        {
+            $go=$alt_id_dict{$go};
+        }
+        next if (!exists($aspect_dict{$go}));
         if (exists($go_dict{$target}))
         {
             $go_dict{$target}.=",$go";
@@ -117,18 +150,6 @@ foreach my $line(`zcat $rootdir/sifts/pdb_chain_uniprot.tsv.gz |cut -f1,2,3|uniq
     }
 }
 
-my %aspect_dict;
-print "$rootdir/goa/name.csv\n";
-foreach my $line(`cat $rootdir/goa/name.csv`)
-{
-    if ($line=~/^(GO:\d+)\t(\w+)/)
-    {
-        my $GOterm="$1";
-        my $Aspect="$2";
-        $aspect_dict{$GOterm}=$Aspect;
-    }
-}
-
 my $txt="#pdb\tchain\tL\tuniprot\tEC\tGO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\n";
 foreach my $target(@target_list)
 {
@@ -156,7 +177,6 @@ foreach my $target(@target_list)
         {
             foreach my $GOterm(split(/,/,$go_dict{$target}))
             {
-                next if (!exists($aspect_dict{$GOterm}));
                 my $Aspect=$aspect_dict{$GOterm};
 
                 if ($Aspect=~/F/ && $go_mf!~/$GOterm/)
