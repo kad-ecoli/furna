@@ -93,6 +93,15 @@ for line in fp.read().splitlines()[1:]:
     taxon_dict[items[0]]=items[1]
 fp.close()
 
+parent_dict=dict()
+if got and got!='0':
+    fp=gzip.open(rootdir+"/data/parent.tsv.gz",'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        key=':'.join(items[:2])
+        parent_dict[key]=(','.join(items[2:])).replace('GO:','')
+    fp.close()
+
 ligand_dict=dict()
 fp=gzip.open(rootdir+"/data/ligand.tsv.gz",'rt')
 for line in fp.read().splitlines()[1:]:
@@ -193,8 +202,10 @@ for line in fp.read().splitlines()[1:]:
     if got:
         if got=='0' and not go_mf+go_bp+go_cc:
             continue
-        elif got!='0' and not got in go_mf+go_bp+go_cc:
-            continue
+        elif got!='0':
+            key=':'.join(items[:2])
+            if not key in parent_dict or not got in parent_dict[key]:
+                continue
     if ecn:
         if ecn=='0' and not ec:
             continue
