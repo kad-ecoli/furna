@@ -76,7 +76,7 @@ foreach my $line(`zcat $rootdir/data/rna.tsv.gz`)
 open(FP,">$rootdir/data/rna.tsv");
 print FP $txt;
 close(FP);
-#&gzipFile("$rootdir/data/rna.tsv");
+&gzipFile("$rootdir/data/rna.tsv");
 
 exit();
 
