@@ -47,5 +47,6 @@ script/download_ligand.pl
 script/combine_protein.pl
 script/download_taxon.pl
 script/fasta2taxon.pl
+script/plot_goa.pl
 ```
 
