@@ -46,5 +46,6 @@ script/combine_interaction.pl
 script/download_ligand.pl
 script/combine_protein.pl
 script/download_taxon.pl
+script/fasta2taxon.pl
 ```
 
