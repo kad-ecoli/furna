@@ -11,13 +11,24 @@ import re
 
 rootdir=os.path.dirname(os.path.abspath(__file__))
 
-def display_receptor(rna_info_list):
+def get_svg_ratio(svgfile):
+    fp=open(svgfile)
+    for line in fp:
+        if line.startswith('<svg width='):
+            items=line.split('"')
+            width=float(items[1].replace("pt",''))
+            height=float(items[3].replace("pt",''))
+            return width/height
+    fp.close()
+    return 0
+
+def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_dict):
     pdbid     =rna_info_list[0]
     asym_id   =rna_info_list[1]
     L     =int(rna_info_list[2])
     reso      =rna_info_list[3]
     rfam_list =rna_info_list[4].split(',')
-    ec_list   =rna_info_list[7].split(',')
+    ec_list   =rna_info_list[7].strip().split(',')
     mf_list   =rna_info_list[8].split(',')
     bp_list   =rna_info_list[9].split(',')
     cc_list   =rna_info_list[10].split(',')
@@ -27,8 +38,96 @@ def display_receptor(rna_info_list):
     dssr      =rna_info_list[14]
     title     =rna_info_list[15]
 
+    mf_parent =''
+    bp_parent =''
+    cc_parent =''
+    target=pdbid+':'+asym_id
+    if target in parent_dict:
+        mf_parent=parent_dict[target][0]
+        bp_parent=parent_dict[target][1]
+        cc_parent=parent_dict[target][2]
+
+    rfam_table=''
+    if len(rfam_list):
+        rfam_table+="<tr><td align=center><strong>Rfam<br>families</strong></td><td>"
+        for r,rfam in enumerate(rfam_list):
+            if r:
+                rfam_table+="<br>"
+            rfam_table+="<a href=https://rfam.org/family/%s target=_blank>%s</a> "%(rfam,rfam)
+            if rfam in rfam_dict:
+                rfam_table+=rfam_dict[rfam]
+        rfam_table+="</td></tr>"
+
+    go_table=''
+    if mf_parent+bp_parent+cc_parent:
+        go_table+='''<tr BGCOLOR="#DEDEDE"><td align=center><strong>GO<br>terms</strong></td><td>
+        <table><tr><td><table>'''
+        for go in mf_list+bp_list+cc_list:
+            go_table+="<tr><td><a href=https://www.ebi.ac.uk/QuickGO/term/%s target=_blank>%s</a>"%(go,go)
+            if go in go_dict:
+                go_table+=" (%s) %s"%(go_dict[go][0],go_dict[go][1])
+            go_table+="</td></tr>\n"
+        go_table+="</table><tr><td><table><tr valign=bottom>"
+
+        parent2idx=dict()
+        fp=open("%s/data/gosvg/list"%rootdir)
+        for i,line in enumerate(fp.read().splitlines()):
+            parent2idx[line]=i+1
+        fp.close()
+
+        width_list=[]
+        if mf_parent:
+            mf_svg="data/gosvg/%d.svg"%parent2idx[mf_parent]
+            width_list.append(get_svg_ratio(mf_svg))
+        if bp_parent:
+            bp_svg="data/gosvg/%d.svg"%parent2idx[bp_parent]
+            width_list.append(get_svg_ratio(bp_svg))
+        if cc_parent:
+            cc_svg="data/gosvg/%d.svg"%parent2idx[cc_parent]
+            width_list.append(get_svg_ratio(cc_svg))
+        if len(width_list)>=2:
+            sumwidth=sum(width_list)
+            width_list=[int(100.*w/sumwidth) for w in width_list]
+        else:
+            width_list=[]
+            
+        width_idx=0
+        width=''
+        if mf_parent:
+            if len(width_list):
+                width="width=%d%%"%width_list[width_idx]
+                width_idx+=1
+            go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Molecular Function (F)</a></td>'%(width,mf_svg,mf_svg)
+        if bp_parent:
+            if len(width_list):
+                width="width=%d%%"%width_list[width_idx]
+                width_idx+=1
+            go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Biological Process (P)</a></td>'%(width,bp_svg,bp_svg)
+        
+        if cc_parent:
+            if len(width_list):
+                width="width=%d%%"%width_list[width_idx]
+                width_idx+=1
+            go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Cellular Component (C)</a></td>'%(width,cc_svg,cc_svg)
+
+        
+        go_table+="</tr></table></td></tr></table></td></tr>"
+
+    ec_table=''
+    if len(ec_list) and ec_list[0]:
+        ec_table+='<tr><td align=center><strong>EC<br>numbers</strong></td><td>'
+        for e,ec in enumerate(ec_list):
+            if e:
+                ec_table+="<br>"
+            ec=ec.replace('EC:','')
+            ec_table+="<a href=https://enzyme.expasy.org/EC/%s target=_blank>%s</a>"%(ec,ec)
+            if ec in ec_dict:
+                ec_table+=" "+ec_dict[ec]
+            
+        ec_table+="</td></tr>"
+        
+
     prefix=pdbid+asym_id
-    species="Species: "
 
     if reso=="-1.00" or reso=="NA":
         reso="N/A"
@@ -44,6 +143,15 @@ def display_receptor(rna_info_list):
         seq_txt+=sequence[i:(i+width)]+' - %d<br>'%(i+width if i+width<L else L)
         seq_txt+='<span title="CSSR secondary structure assignment">'+cssr[i:(i+width)]+'</span><br>'
         seq_txt+='<span title="DSSR secondary structure assignment">'+dssr[i:(i+width)]+'</span><br>'
+
+    taxon_txt=''
+    for t,taxon in enumerate(taxon_list):
+        if t:
+            taxon_txt+="<br>"
+        if not taxon in taxon_dict:
+            taxon_dict[taxon]=''
+        taxon_txt+="<i>%s</i> (<a href=https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s target=_blank>%s</a>)"%(
+            taxon_dict[taxon],taxon,taxon)
 
     print('''
 <tr><td>
@@ -118,6 +226,10 @@ def display_receptor(rna_info_list):
 
 
     </td></tr>
+    <tr BGCOLOR="#DEDEDE"><td align=center><strong>Species</strong></td><td>$taxon_txt</td></tr>
+    $rfam_table
+    $go_table
+    $ec_table
     </table>
 </div>
 </td></tr>
@@ -128,88 +240,17 @@ def display_receptor(rna_info_list):
   ).replace("$reso"     ,reso
   ).replace("$chainfile",chainfile
   ).replace("$arenafile",arenafile
+  ).replace("$taxon_txt",taxon_txt
+  ).replace("$rfam_table",rfam_table
+  ).replace("$go_table",go_table
+  ).replace("$ec_table",ec_table
   ))
-
-    #if ec:
-        #display_ec(ec,csaOrig,csaRenu)
-
-    #cmd="zcat %s/data/lig_all.tsv.gz|grep -P '^%s\\t%s\\t'"%(
-        #rootdir,pdbid,asym_id)
-    #p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-    #stdout,stderr=p.communicate()
-    #lines=stdout.decode().splitlines()
-    #if len(lines):
-        #print('''
-#<tr><td>
-#<div id="headerDiv">
-    #<div id="titleText">Interaction with ligand</div>
-#</div>
-#<div style="clear:both;"></div>
-#<div id="contentDiv">
-    #<div id="RContent" style="display: block;">
-    #<table width=100% border="0" style="font-family:Monospace;font-size:14px;background:#F2F2F2;" >
-    #<tr BGCOLOR="#DEDEDE" align=center>
-        #<th width=5%><strong>Site<br>#</strong></th>
-        #<th width=5%><strong>Ligand</strong></th>
-        #<th width=5%><strong>Ligand<br>chain</strong></th>
-        #<th width=29%><strong>Binding residues on receptor<br>(original residue number in PDB)</strong></th>
-        #<th width=29%><strong>Binding residues on receptor<br>(residue number reindexed from 1)</strong></th>
-        #<th width=27%><strong>Binding affinity</strong></th>
-    #</tr>
-#''')
-        #for l,line in enumerate(lines):
-            #items    =line.split('\t')
-            #recCha   =items[1]
-            #bs       =items[2]
-            #ccd      =items[3]
-            #ligCha   =items[4]
-            #ligIdx   =items[5]
-            #resOrig  =items[6]
-            #resRenu  =items[7]
-            #manual   =items[8]
-            #moad     =items[9]
-            #pdbbind  =items[10]
-            #bindingdb=items[11]
-
-            #baff_list=[]
-            #if manual:
-                #baff_list.append("Manual survey: "+manual)
-            #if moad:
-                #baff_list.append("<a href=http://bindingmoad.org/pdbrecords/index/%s target=_blank>MOAD</a>: %s"%(pdbid,moad))
-            #if pdbbind:
-                #baff_list.append("<a href=http://pdbbind.org.cn/quickpdb.php?quickpdb=%s target=_blank>PDBbind-CN</a>: %s"%(pdbid,pdbbind))
-            #if bindingdb:
-                #baff_list.append("BindingDB: "+bindingdb)
-
-            #bgcolor=''
-            #if l%2==1:
-                #bgcolor=' BGCOLOR="#DEDEDE" '
-            #print('''
-    #<tr $bgcolor align=center>
-        #<td><span title="Click to view binding site"><a href="pdb.cgi?pdb=$pdbid&chain=$recCha&bs=$bs" target=_blank>$bs</a></span></td>
-        #<td><span title="Click to view binding site"><a href="pdb.cgi?pdb=$pdbid&chain=$recCha&bs=$bs" target=_blank>$ccd</a></span></td>
-        #<td><span title="Click to view binding site"><a href="pdb.cgi?pdb=$pdbid&chain=$recCha&bs=$bs" target=_blank>$ligCha</a></span></td>
-        #<td><span title="Click to view binding site"><a href="pdb.cgi?pdb=$pdbid&chain=$recCha&bs=$bs" target=_blank>$resOrig</a></span></td>
-        #<td><span title="Click to view binding site"><a href="pdb.cgi?pdb=$pdbid&chain=$recCha&bs=$bs" target=_blank>$resRenu</a></span></td>
-        #<td>$baff</td>
-    #</tr>
-            #'''.replace("$bgcolor",bgcolor
-              #).replace("$pdbid",pdbid
-              #).replace("$recCha",recCha
-              #).replace("$ccd",ccd
-              #).replace("$ligCha",recCha
-              #).replace("$bs",bs
-              #).replace("$resOrig",resOrig
-              #).replace("$resRenu",resRenu
-              #).replace("$baff",'<br>'.join(baff_list)))
-
-        #print('''   </table>
-#</div>
-#</td></tr>
-#''')
 
     #if go:
         #display_go(go,uniprot,pdbid,asym_id)
+    
+    #if ec:
+        #display_ec(ec,csaOrig,csaRenu)
     return
 
 def sanitize(inString):
@@ -227,6 +268,65 @@ def get_rna_info(pdbid,asym_id):
             rna_info_list=items
     fp.close()
     return rna_info_list
+
+def get_ligand_info(pdbid,asym_id,lig3,ligCha,ligIdx):
+    ligand_info_list=[]
+    fp=gzip.open("%s/data/interaction.tsv.gz"%rootdir,'rt')
+    for line in fp.read().splitlines():
+        if not line.startswith(pdbid):
+            continue
+        items=line.split('\t')
+        if items[0]!=pdbid or items[1]!=asym_id or items[3]!=lig3 and items[4]!=ligCha:
+            continue
+        if items[5]==ligIdx or lig3 in ["protein","rna","dna"]:
+            ligand_info_list=items
+    fp.close()
+    return ligand_info_list
+
+def read_taxon():
+    taxon_dict=dict()
+    fp=gzip.open("%s/data/taxon.tsv.gz"%rootdir,'rt')
+    for line in fp.read().splitlines():
+        taxon,name=line.split('\t')
+        taxon_dict[taxon]=name
+    fp.close()
+    return taxon_dict
+
+def read_parent():
+    parent_dict=dict()
+    fp=gzip.open("%s/data/parent.tsv.gz"%rootdir,'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        parent_dict[':'.join(items[:2])]=items[2:]
+    fp.close()
+    return parent_dict
+
+def read_go():
+    go_dict=dict()
+    fp=gzip.open("%s/data/go2name.tsv.gz"%rootdir,'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        go_dict[items[0]]=items[1:]
+    fp.close()
+    return go_dict
+
+def read_ec():
+    ec_dict=dict()
+    fp=gzip.open("%s/data/enzyme.tsv.gz"%rootdir,'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        ec_dict[items[0]]=items[1]
+    fp.close()
+    return ec_dict
+
+def read_rfam():
+    rfam_dict=dict()
+    fp=gzip.open("%s/data/rfam.tsv.gz"%rootdir,'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        rfam_dict[items[0]]=items[1]
+    fp.close()
+    return rfam_dict
 
 if __name__=="__main__":
     form   =cgi.FieldStorage()
@@ -294,8 +394,15 @@ Unknown pdb chain %s:%s
                 title+=" in Chain "+ligCha
     print("<tr><td><h1 align=center>"+title+"</h1></td></tr>")
 
-    display_receptor(rna_info_list)
-    #if lig3 and ligCha and ligIdx:
+    taxon_dict=read_taxon()
+    parent_dict=read_parent()
+    go_dict=read_go()
+    ec_dict=read_ec()
+    rfam_dict=read_rfam()
+
+    display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_dict)
+    if lig3 and ligCha and ligIdx:
+        ligand_info_list=get_ligand_info(pdbid,asym_id,lig3,ligCha,ligIdx)
         #display_interaction(rna_info_list)
    
     rnacentral=''
