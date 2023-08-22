@@ -299,7 +299,7 @@ for l,items in enumerate(sort_lines):
     freq='0'
     ccd=items[0]
     if ccd in freq_dict:
-        freq='<a href="qsearch.cgi?lig3=%s" target=_blank>%s</a>'%(
+        freq='<a href="search.cgi?lig3=%s" target=_blank>%s</a>'%(
             ccd,freq_dict[ccd])
     ligandID='<span title="View at RCSB PDB"><a href=http://rcsb.org/ligand/%s target=_blank>%s</a></span>'%(ccd,ccd)
     if items[6]:
