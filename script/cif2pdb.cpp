@@ -3335,6 +3335,9 @@ int cif2pdb(const string &infile, const string &recChainID, string &prefix)
         _citation_pdbx_database_id_PubMed=="?";
     string metadata_txt=_citation_title+"\npmid:"+
         _citation_pdbx_database_id_PubMed+'\n';
+    string metadata_tmp;
+    map<string,string> metadata_dict;
+    vector<string> ligand_filename_allvec;
     vector<string> accession_vec;
     vector<string> receptor_filename_vec;
     vector<string> ligand_filename_vec;
@@ -3419,32 +3422,35 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
             }
             pdbx_db_accession=Join(",",accession_vec);
             clear_line_vec(accession_vec);
-            metadata_txt+=">"+asym_id+"\t";
+            metadata_tmp+=">"+asym_id+"\t";
+            
             if (moltype_vec[2]>=moltype_vec[1] && moltype_vec[2]>=moltype_vec[0])
             {
-                metadata_txt+="protein\t";
+                metadata_tmp+="protein\t";
                 filename=prefix+"_protein_"+asym_id+"_0.pdb";
-                ligand_filename_vec.push_back(filename);
+                ligand_filename_allvec.push_back(filename);
                 polymerligand_vec.push_back(make_pair(asym_id,"protein"));
             }
             else
             {
                 if (moltype_vec[0]>=moltype_vec[1])
                 {
-                    metadata_txt+="rna\t";
+                    metadata_tmp+="rna\t";
                     filename=prefix+"_rna_"+asym_id+"_0.pdb";
                     polymerligand_vec.push_back(make_pair(asym_id,"rna"));
                 }
                 else
                 {
-                    metadata_txt+="dna\t";
+                    metadata_tmp+="dna\t";
                     filename=prefix+"_dna_"+asym_id+"_0.pdb";
                     polymerligand_vec.push_back(make_pair(asym_id,"dna"));
                 }
-                ligand_filename_vec.push_back(filename);
+                ligand_filename_allvec.push_back(filename);
             }
             buf<<pdbx_db_accession<<'\t'<<sequence.size()<<'\n'<<sequence<<endl;
-            metadata_txt+=buf.str();
+            metadata_tmp+=buf.str();
+            metadata_dict[asym_id]=metadata_tmp;
+            metadata_tmp.clear();
             buf.str(string());
             
             //cout<<filename<<endl;
@@ -3456,10 +3462,51 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
         fout_buf.str(string());
     }
 
+    /* sequence of receptor */
+    /*
+    for (c0=0;c0<chainID_vec.size();c0++)
+    {
+        asym_id=chainID_vec[c0];
+        if (asym_id!=recChainID) continue;
+        for (c=0;c<pep.chains.size();c++)
+        {
+            if (asym_id!=pep.chains[c].asym_id) continue;
+            for (r=0;r<pep.chains[c].residues.size();r++)
+            {
+                if (pep.chains[c].residues[r].het>=3) continue;
+                comp_id=pep.chains[c].residues[r].resn;
+                if (stdres_dict.count(comp_id)==0)
+                {
+                    if (modres_dict.count(comp_id)) 
+                        comp_id=modres_dict[comp_id];
+                    else comp_id=map_stdres(comp_id,
+                        pep.chains[c].residues[r],stdres_dict);
+                }
+                sequence+=aa3to1(comp_id);
+            }
+
+            pdbx_db_accession="";
+            for (a=0;a<dbref_vec.size();a++)
+            {
+                if (dbref_vec[a].first!=asym_id) continue;
+                pdbx_db_accession=dbref_vec[a].second;
+                if (find(accession_vec.begin(),accession_vec.end(),
+                    pdbx_db_accession)!=accession_vec.end()) continue;
+                accession_vec.push_back(pdbx_db_accession);
+            }
+            pdbx_db_accession=Join(",",accession_vec);
+            buf<<'>'<<asym_id<<"\trna\t"<<pdbx_db_accession<<'\t'
+                <<sequence.size()<<'\n'<<sequence<<endl;
+            metadata_txt+=buf.str();
+            break;
+        }
+    }
+    */
+
     /* calculate contact for polymer */
     map<string,double> vdw_dict;
     make_vdw(vdw_dict);
-    metadata_txt+="#CCD\tligCha\tligIdx\tresidueOriginal\tresidueRenumbered\tresSeq\n";
+    metadata_tmp+="#CCD\tligCha\tligIdx\tresidueOriginal\tresidueRenumbered\tresSeq\n";
     vector<double> tmp_vec(4,0); // xyz, vdw
     vector<vector<double> > ligand_vec;
     stringstream resSeq_buf;
@@ -3494,12 +3541,18 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
             }
         }
 
-        getContact(ligand_vec, asym_id, comp_id, 0,
-            pep, recChainID, vdw_dict, resSeq_buf.str(), metadata_txt);
+        if (getContact(ligand_vec, asym_id, comp_id, 0,
+            pep, recChainID, vdw_dict, resSeq_buf.str(), metadata_tmp))
+        {
+            filename=prefix+"_"+comp_id+"_"+asym_id+"_0.pdb";
+            ligand_filename_vec.push_back(filename);
+            metadata_txt+=metadata_dict[asym_id];
+        }
         for (a=0;a<ligand_vec.size();a++) ligand_vec[a].clear();
         ligand_vec.clear();
         resSeq_buf.str(string());
     }
+    metadata_txt+=metadata_tmp;
     
     /* write small molecules */
     map<string,int> ligand_dup_map;
@@ -3556,6 +3609,7 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
                 fout<<fout_buf.str()<<flush;
                 fout.close();
                 ligand_filename_vec.push_back(filename);
+                ligand_filename_allvec.push_back(filename);
             }
             else ligand_dup_map[filename]--;
             fout_buf.str(string());
@@ -3570,6 +3624,7 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
     fout.open(filename.c_str());
     fout<<metadata_txt<<flush;
     fout.close();
+    map<string,string>().swap(metadata_dict);
 
     /* compress file */
     if (receptor_filename_vec.size()+ligand_filename_vec.size())
@@ -3586,7 +3641,7 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
             line="rm ";
 #endif
             line+=Join(" ",receptor_filename_vec)+" "+
-                  Join(" ",ligand_filename_vec);
+                  Join(" ",ligand_filename_allvec);
             i=system(line.c_str());
             fp.close();
         }
@@ -3618,6 +3673,7 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
     
     moltype_vec.clear();
     metadata_txt.clear();
+    metadata_tmp.clear();
     vector<string>().swap(receptor_filename_vec);
     vector<string>().swap(ligand_filename_vec);
     vector<pair<string,string>>().swap(polymerligand_vec);
