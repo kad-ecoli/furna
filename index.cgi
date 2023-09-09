@@ -56,7 +56,7 @@ if len(stdout):
 <p>
 <h1><span title="PDB $pdbid Chain $chain"><a href=pdb.cgi?pdb=$pdbid&chain=$chain&lig3=$lig3&ligCha=$ligCha&ligIdx=$ligIdx target=_blank>View an example ligand-RNA interaction</a></span></h1>
 </p>
-'''.replace("$pdbid",pdbid).replace("$chain",chain).replace("$ligCha",ligCha).replace("$ligIdx",ligIdx).replace("$lig3","lig3"))
+'''.replace("$pdbid",pdbid).replace("$chain",chain).replace("$ligCha",ligCha).replace("$ligIdx",ligIdx).replace("$lig3",lig3))
     else: # receptor
         print('''
 <p>
