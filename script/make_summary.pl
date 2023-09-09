@@ -52,7 +52,7 @@ foreach my $line(`zcat $rootdir/data/interaction.tsv.gz |grep -v '^#'|cut -f4`)
     $interaction++;
 }
 
-
+my $ligand=`zcat $rootdir/data/ligand.tsv.gz |cut -f1|grep -v '^#'|wc -l`+0;
 
 my $index_txt=<<EOF
 <p>
@@ -66,6 +66,7 @@ The database is updated weekly and the current version ($date) contains:
 <li>Number of entries for protein ligands: <a href=search.cgi?lig3=protein>$protein</a></li>
 <li>Number of entries for DNA ligands: <a href=search.cgi?lig3=dna>$dna</a></li>
 <li>Number of entries for RNA ligands: <a href=search.cgi?lig3=rna>$rna</a></li>
+<li>Number of types of ligands: <a href=ligand.cgi>$ligand</a></li>
 
 <li>Number of RNAs: <a href=search.cgi>$RNAs</a></li>
 <li>Number of RNAs with Enzyme Commission (EC) numbers: <a href=search.cgi?ecn=0>$ecn</a></li>

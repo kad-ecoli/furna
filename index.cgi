@@ -35,23 +35,34 @@ if os.path.isfile(filename):
     print(fp.read())
     fp.close()
 
-#cmd="ls -rt output/|grep -P '[a-z0-9]+_[A-Za-z0-9]+_[FPC]\.svg'|cut -f1,2 -d_|uniq|tail -1"
-#p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-#stdout,stderr=p.communicate()
-#stdout=stdout.decode().strip()
-#if len(stdout):
-    #pdbid,chain=stdout.split('_')[:2]
-    #cmd="ls output/%s_*_*_*.pdb.gz|wc -l"%(pdbid)
-    #p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-    #stdout,stderr=p.communicate()
-    #bs=''
-    #if int(stdout.decode()):
-        #bs="&bs=BS01"
-    #print('''
-#<p>
-#<h1><span title="PDB $pdbid Chain $chain Binding Site BS01"><a href=pdb.cgi?pdb=$pdbid&chain=$chain$bs target=_blank>View an example BioLiP entry</a></span></h1>
-#</p>
-#'''.replace("$pdbid",pdbid).replace("$chain",chain).replace("$bs",bs))
+cmd="ls output/*.cif.gz output/*.ent.gz|shuf|cut -f2 -d/|cut -f1 -d.|head -1"
+p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+stdout,stderr=p.communicate()
+stdout=stdout.decode().strip()
+if len(stdout):
+    target=stdout.split('_')[0]
+    pdbid=target[:4]
+    chain=target[4:]
+    if len(target)>=9 and target[:8]==target[:8].lower():
+        pdbid=target[:8]
+        chain=target[8:]
+
+    if '_' in stdout: # interaction
+        items=stdout.split('_')
+        lig3=items[1]
+        ligCha=items[2]
+        ligIdx=items[3]
+        print('''
+<p>
+<h1><span title="PDB $pdbid Chain $chain"><a href=pdb.cgi?pdb=$pdbid&chain=$chain&lig3=$lig3&ligCha=$ligCha&ligIdx=$ligIdx target=_blank>View an example ligand-RNA interaction</a></span></h1>
+</p>
+'''.replace("$pdbid",pdbid).replace("$chain",chain).replace("$ligCha",ligCha).replace("$ligIdx",ligIdx).replace("$lig3","lig3"))
+    else: # receptor
+        print('''
+<p>
+<h1><span title="PDB $pdbid Chain $chain"><a href=pdb.cgi?pdb=$pdbid&chain=$chain target=_blank>View an example RNA</a></span></h1>
+</p>
+'''.replace("$pdbid",pdbid).replace("$chain",chain))
 
 
 if len(html_footer):

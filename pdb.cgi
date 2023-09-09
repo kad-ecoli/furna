@@ -346,7 +346,7 @@ def display_regular_ligand(ligand_info_list,ligand_dict):
 
     return
 
-def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_dict):
+def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_dict):
     pdbid          =ligand_info_list[0]
     asym_id        =ligand_info_list[1]
     assembly       =ligand_info_list[2]
@@ -364,6 +364,8 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_di
     L2=len(ligSequence)
     for i in range(0,L2,width):
         ligseq_txt+=ligSequence[i:(i+width)]+' - %d<br>'%(i+width if i+width<L2 else L2)
+    ligseq_txt="<tr><td align=center width=10%><strong>$ccd<br>sequence</strong></td><td>$ligseq_txt</td></tr>".replace("$ligseq_txt",ligseq_txt
+        ).replace("$ccd",ccd.replace("rna","RNA").replace("dna","DNA").replace("protein","Protein"))
 
 
     assemblyfile="output/"+prefix+".cif.gz"
@@ -396,6 +398,263 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_di
     globalviewscript+="select chain=R; cartoons; color group; select chain=L; cartoons; color magenta;"
     localviewscript+="select chain=R; color group; select chain=L; cartoons; color magenta; zoom {chain=L}"
 
+
+    polymer_table=''
+    if ccd=="protein":
+        fp=gzip.open("data/protein.tsv.gz",'rt')
+        protein_lines=fp.read().splitlines()
+        fp.close()
+        for line in protein_lines:
+            items=line.split('\t')
+            if items[0]!=pdbid or items[1]!=ligCha.split('-')[0]:
+                continue
+            uniprot_list=items[3].split(',')
+            ec_list     =items[4].split(',')
+            mf_list     =items[5].split(',')
+            bp_list     =items[6].split(',')
+            cc_list     =items[7].split(',')
+            taxon_list  =items[8].split(',')
+            
+            if len(uniprot_list) and uniprot_list[0]:
+                polymer_table+='<tr bgcolor="#DEDEDE"><td align=center><strong>UniProt</strong></td><td>'
+                for u,uniprot in enumerate(uniprot_list):
+                    if u:
+                        polymer_table+="<br>"
+                    polymer_table+="<a href=https://uniprot.org/uniprotkb/%s target=_blank>%s</a> "%(uniprot,uniprot)
+                polymer_table+="</td></tr>"
+
+
+            taxon_txt=''
+            for t,taxon in enumerate(taxon_list):
+                if t:
+                    taxon_txt+="<br>"
+                if not taxon in taxon_dict:
+                    taxon_dict[taxon]=''
+                taxon_txt+="<i>%s</i> (<a href=https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s target=_blank>%s</a>)"%(
+                    taxon_dict[taxon],taxon,taxon)
+            if len(taxon_txt):
+                polymer_table+='<tr><td align=center><strong>Species</strong></td><td>'+taxon_txt+"</td></tr>"
+
+            mf_parent =''
+            bp_parent =''
+            cc_parent =''
+            target=pdbid+':'+ligCha.split('-')[0]
+            if target in parent_dict:
+                mf_parent=parent_dict[target][0]
+                bp_parent=parent_dict[target][1]
+                cc_parent=parent_dict[target][2]
+
+            go_table=''
+            if mf_parent+bp_parent+cc_parent:
+                go_table+='''<tr bgcolor="#DEDEDE"><td align=center><strong>GO<br>terms</strong></td><td>
+        <table><tr><td><table>'''
+                for go in mf_list+bp_list+cc_list:
+                    go_table+="<tr><td><a href=https://www.ebi.ac.uk/QuickGO/term/%s target=_blank>%s</a>"%(go,go)
+                    if go in go_dict:
+                        go_table+=" (%s) %s"%(go_dict[go][0],go_dict[go][1])
+                    go_table+="</td></tr>\n"
+                go_table+="</table><tr><td><table><tr valign=bottom>"
+
+                parent2idx=dict()
+                fp=open("%s/data/gosvg/list"%rootdir)
+                for i,line in enumerate(fp.read().splitlines()):
+                    parent2idx[line]=i+1
+                fp.close()
+
+                width_list=[]
+                if mf_parent:
+                    mf_svg="data/gosvg/%d.svg"%parent2idx[mf_parent]
+                    width_list.append(get_svg_ratio(mf_svg))
+                if bp_parent:
+                    bp_svg="data/gosvg/%d.svg"%parent2idx[bp_parent]
+                    width_list.append(get_svg_ratio(bp_svg))
+                if cc_parent:
+                    cc_svg="data/gosvg/%d.svg"%parent2idx[cc_parent]
+                    width_list.append(get_svg_ratio(cc_svg))
+                if len(width_list)>=2:
+                    sumwidth=sum(width_list)
+                    width_list=[int(100.*w/sumwidth) for w in width_list]
+                else:
+                    width_list=[]
+            
+                width_idx=0
+                width=''
+                if mf_parent:
+                    if len(width_list):
+                        width="width=%d%%"%width_list[width_idx]
+                        width_idx+=1
+                    go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Molecular Function (F)</a></td>'%(width,mf_svg,mf_svg)
+                if bp_parent:
+                    if len(width_list):
+                        width="width=%d%%"%width_list[width_idx]
+                        width_idx+=1
+                    go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Biological Process (P)</a></td>'%(width,bp_svg,bp_svg)
+        
+                if cc_parent:
+                    if len(width_list):
+                        width="width=%d%%"%width_list[width_idx]
+                        width_idx+=1
+                    go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Cellular Component (C)</a></td>'%(width,cc_svg,cc_svg)
+
+        
+                go_table+="</tr></table></td></tr></table></td></tr>"
+
+            ec_table=''
+            if len(ec_list) and ec_list[0]:
+                bgcolor='bgcolor="#DEDEDE"'
+                if mf_parent+bp_parent+cc_parent:
+                    bgcolor=''
+                ec_table+='<tr '+bgcolor+'><td align=center><strong>EC<br>numbers</strong></td><td>'
+                for e,ec in enumerate(ec_list):
+                    if e:
+                        ec_table+="<br>"
+                    ec=ec.replace('EC:','')
+                    ec_table+="<a href=https://enzyme.expasy.org/EC/%s target=_blank>%s</a>"%(ec,ec)
+                    if ec in ec_dict:
+                        ec_table+=" "+ec_dict[ec]
+                ec_table+="</td></tr>"
+
+            polymer_table+=go_table+ec_table
+
+    elif ccd=="rna":
+        fp=gzip.open("data/rna.tsv.gz",'rt')
+        rna_lines=fp.read().splitlines()
+        fp.close()
+        for line in rna_lines:
+            items=line.split('\t')
+            if items[0]!=pdbid or items[1]!=ligCha.split('-')[0]:
+                continue
+            rfam_list   =items[4].split(',')
+            rc_list     =items[5].split(',')
+            ec_list     =items[7].split(',')
+            mf_list     =items[8].split(',')
+            bp_list     =items[9].split(',')
+            cc_list     =items[10].split(',')
+            taxon_list  =items[11].split(',')
+            cssr        =items[13]
+            dssr        =items[14]
+           
+            ligseq_txt=''
+            width=100
+            L2=len(ligSequence)
+            for i in range(0,L2,width):
+                ligseq_txt+=ligSequence[i:(i+width)]+' - %d<br>'%(i+width if i+width<L2 else L2)
+                ligseq_txt+='<span title="CSSR secondary structure assignment">'+cssr[i:(i+width)]+'</span><br>'
+                ligseq_txt+='<span title="DSSR secondary structure assignment">'+dssr[i:(i+width)]+'</span><br>'
+
+            ligseq_txt="<tr><td align=center width=10%><strong>RNA<br>sequence &amp;<br>secondary<br>structure</strong></td><td>$ligseq_txt</td></tr>".replace("$ligseq_txt",ligseq_txt)
+
+            if len(rc_list) and rc_list[0]:
+                polymer_table+='<tr bgcolor="#DEDEDE"><td align=center><strong>RNAcentral</strong></td><td>'
+                for r,rnacentral in enumerate(rc_list):
+                    if r:
+                        polymer_table+="<br>"
+                    polymer_table+="<a href=https://rnacentral.org/rna/%s target=_blank>%s</a> "%(rnacentral,rnacentral)
+                polymer_table+="</td></tr>"
+
+            if len(rfam_list) and rfam_list[0]:
+                polymer_table+='<tr><td align=center><strong>Rfam<br>families</strong></td><td>'
+                for r,rfam in enumerate(rfam_list):
+                    if r:
+                        polymer_table+="<br>"
+                    polymer_table+="<a href=https://rfam.org/family/%s target=_blank>%s</a> "%(rfam,rfam)
+                    if rfam in rfam_dict:
+                        polymer_table+=rfam_dict[rfam]
+                polymer_table+="</td></tr>"
+
+            taxon_txt=''
+            for t,taxon in enumerate(taxon_list):
+                if t:
+                    taxon_txt+="<br>"
+                if not taxon in taxon_dict:
+                    taxon_dict[taxon]=''
+                taxon_txt+="<i>%s</i> (<a href=https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s target=_blank>%s</a>)"%(
+                    taxon_dict[taxon],taxon,taxon)
+            if len(taxon_txt):
+                polymer_table+='<tr bgcolor="#DEDEDE"><td align=center><strong>Species</strong></td><td>'+taxon_txt+"</td></tr>"
+
+            mf_parent =''
+            bp_parent =''
+            cc_parent =''
+            target=pdbid+':'+ligCha.split('-')[0]
+            if target in parent_dict:
+                mf_parent=parent_dict[target][0]
+                bp_parent=parent_dict[target][1]
+                cc_parent=parent_dict[target][2]
+
+            go_table=''
+            if mf_parent+bp_parent+cc_parent:
+                go_table+='''<tr><td align=center><strong>GO<br>terms</strong></td><td>
+        <table><tr><td><table>'''
+                for go in mf_list+bp_list+cc_list:
+                    go_table+="<tr><td><a href=https://www.ebi.ac.uk/QuickGO/term/%s target=_blank>%s</a>"%(go,go)
+                    if go in go_dict:
+                        go_table+=" (%s) %s"%(go_dict[go][0],go_dict[go][1])
+                    go_table+="</td></tr>\n"
+                go_table+="</table><tr><td><table><tr valign=bottom>"
+
+                parent2idx=dict()
+                fp=open("%s/data/gosvg/list"%rootdir)
+                for i,line in enumerate(fp.read().splitlines()):
+                    parent2idx[line]=i+1
+                fp.close()
+
+                width_list=[]
+                if mf_parent:
+                    mf_svg="data/gosvg/%d.svg"%parent2idx[mf_parent]
+                    width_list.append(get_svg_ratio(mf_svg))
+                if bp_parent:
+                    bp_svg="data/gosvg/%d.svg"%parent2idx[bp_parent]
+                    width_list.append(get_svg_ratio(bp_svg))
+                if cc_parent:
+                    cc_svg="data/gosvg/%d.svg"%parent2idx[cc_parent]
+                    width_list.append(get_svg_ratio(cc_svg))
+                if len(width_list)>=2:
+                    sumwidth=sum(width_list)
+                    width_list=[int(100.*w/sumwidth) for w in width_list]
+                else:
+                    width_list=[]
+            
+                width_idx=0
+                width=''
+                if mf_parent:
+                    if len(width_list):
+                        width="width=%d%%"%width_list[width_idx]
+                        width_idx+=1
+                    go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Molecular Function (F)</a></td>'%(width,mf_svg,mf_svg)
+                if bp_parent:
+                    if len(width_list):
+                        width="width=%d%%"%width_list[width_idx]
+                        width_idx+=1
+                    go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Biological Process (P)</a></td>'%(width,bp_svg,bp_svg)
+        
+                if cc_parent:
+                    if len(width_list):
+                        width="width=%d%%"%width_list[width_idx]
+                        width_idx+=1
+                    go_table+='<td align=center %s><a href="%s" target=_blank><img src="%s" style="display:block;" width="100%%"><br>View graph for<br>Cellular Component (C)</a></td>'%(width,cc_svg,cc_svg)
+
+        
+                go_table+="</tr></table></td></tr></table></td></tr>"
+
+            ec_table=''
+            if len(ec_list) and ec_list[0]:
+                bgcolor='bgcolor="#DEDEDE"'
+                ec_table+='<tr '+bgcolor+'><td align=center><strong>EC<br>numbers</strong></td><td>'
+                for e,ec in enumerate(ec_list):
+                    if e:
+                        ec_table+="<br>"
+                    ec=ec.replace('EC:','')
+                    ec_table+="<a href=https://enzyme.expasy.org/EC/%s target=_blank>%s</a>"%(ec,ec)
+                    if ec in ec_dict:
+                        ec_table+=" "+ec_dict[ec]
+                ec_table+="</td></tr>"
+
+            polymer_table+=go_table+ec_table
+
+
+
+
     print('''
 <tr><td>
 <div id="headerDiv">
@@ -405,9 +664,10 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_di
 <div id="contentDiv">
     <div id="RContent" style="display: block;">
     <table width=100% border="0" style="font-family:Monospace;font-size:14px;background:#F2F2F2;" >
-    <tr><td align=center width=10%><strong>Sequence</strong></td><td>$ligseq_txt</td></tr>
+    $ligseq_txt
     <tr bgcolor="#DEDEDE"><td align=center><strong>Ligand<br>chain</strong></td><td>Chain $ligCha $assembly</td></tr>
     <tr><td align=center width=10%><strong>Residue<br>sequence<br>number of<br>the ligand</strong></td><td>$resSeq</td></tr>
+    $polymer_table
     </table>
     </div>
 </div>
@@ -511,6 +771,7 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_di
     '''.replace("$ligseq_txt",ligseq_txt
       ).replace("$ligCha",ligCha
       ).replace("$resSeq",resSeq
+      ).replace("$polymer_table",polymer_table
       ).replace("$residueOriginal",residueOriginal
       ).replace("$residueRenumber",residueRenumber
       ).replace("$assemblyfile",assemblyfile
@@ -521,6 +782,7 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_di
       ).replace("$localviewscript",localviewscript
       ).replace("$assembly",'' if assembly=='0' else " in assembly"+assembly
     ))
+
 
     print('''
     </table>
@@ -537,6 +799,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_d
     L     =int(rna_info_list[2])
     reso      =rna_info_list[3]
     rfam_list =rna_info_list[4].split(',')
+    rc_list   =rna_info_list[5].split(',')
     ec_list   =rna_info_list[7].strip().split(',')
     mf_list   =rna_info_list[8].split(',')
     bp_list   =rna_info_list[9].split(',')
@@ -558,7 +821,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_d
 
     rfam_table=''
     if len(rfam_list) and rfam_list[0]:
-        rfam_table+="<tr><td align=center><strong>Rfam<br>families</strong></td><td>"
+        rfam_table+='<tr bgcolor="#DEDEDE"><td align=center><strong>Rfam<br>families</strong></td><td>'
         for r,rfam in enumerate(rfam_list):
             if r:
                 rfam_table+="<br>"
@@ -569,7 +832,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_d
 
     go_table=''
     if mf_parent+bp_parent+cc_parent:
-        go_table+='''<tr bgcolor="#DEDEDE"><td align=center><strong>GO<br>terms</strong></td><td>
+        go_table+='''<tr><td align=center><strong>GO<br>terms</strong></td><td>
         <table><tr><td><table>'''
         for go in mf_list+bp_list+cc_list:
             go_table+="<tr><td><a href=https://www.ebi.ac.uk/QuickGO/term/%s target=_blank>%s</a>"%(go,go)
@@ -624,7 +887,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_d
 
     ec_table=''
     if len(ec_list) and ec_list[0]:
-        ec_table+='<tr><td align=center><strong>EC<br>numbers</strong></td><td>'
+        ec_table+='<tr bgcolor="#DEDEDE"><td align=center><strong>EC<br>numbers</strong></td><td>'
         for e,ec in enumerate(ec_list):
             if e:
                 ec_table+="<br>"
@@ -652,6 +915,15 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_d
         seq_txt+=sequence[i:(i+width)]+' - %d<br>'%(i+width if i+width<L else L)
         seq_txt+='<span title="CSSR secondary structure assignment">'+cssr[i:(i+width)]+'</span><br>'
         seq_txt+='<span title="DSSR secondary structure assignment">'+dssr[i:(i+width)]+'</span><br>'
+
+
+    rnacentral_table=''
+    if len(rc_list) and rc_list[0]:
+        rnacentral_list=[]
+        for r in rc_list:
+            rnacentral_list.append("<a href=https://rnacentral.org/rna/%s target=_blank>%s</a>"%(r,r))
+        rnacentral_table+='''<tr><td align=center><strong>RNAcentral</strong></td><td>%s</td></tr>'''%(''.join(rnacentral_list))
+
 
     taxon_txt=''
     for t,taxon in enumerate(taxon_list):
@@ -740,6 +1012,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_d
 
     </td></tr>
     <tr bgcolor="#DEDEDE"><td align=center><strong>Species</strong></td><td>$taxon_txt</td></tr>
+    $rnacentral_table
     $rfam_table
     $go_table
     $ec_table
@@ -757,6 +1030,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_d
   ).replace("$rfam_table",rfam_table
   ).replace("$go_table",go_table
   ).replace("$ec_table",ec_table
+  ).replace("$rnacentral_table",rnacentral_table
   ))
     return
 
@@ -896,6 +1170,8 @@ def extract_assembly(pdbid,asym_id):
     divided=pdbid[-3:-1]
     prefix=pdbid+asym_id
     interimfile=os.path.join(rootdir,"interim",divided,prefix+".tar.gz")
+    if not os.path.isfile(interimfile):
+        return
     outdir=os.path.join(rootdir,"output")
     
     assemblyfile=os.path.join(outdir,prefix+".cif.gz")
@@ -1049,17 +1325,10 @@ Unknown pdb chain %s:%s
             if not lig3 in ["protein","dna","rna"]:
                 display_regular_ligand(ligand_info_list,ligand_dict)
             else:
-                display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_dict)
+                display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,go_dict,rfam_dict)
     else:
         display_interaction_list(pdbid,asym_id,ligand_dict)
    
-    rnacentral=''
-    if len(rna_info_list[5]):
-        rnacentral_list=[]
-        for r in rna_info_list[5].split(','):
-            rnacentral_list.append("<a href=https://rnacentral.org/rna/%s target=_blank>%s</a>"%(r,r))
-        rnacentral+='''<tr bgcolor="#DEDEDE"><td align=center><strong>RNAcentral</strong></td><td>%s</td></tr>'''%(''.join(rnacentral_list))
-    
     pubmed=''
     if len(rna_info_list[6]):
         pubmed_dict=dict()
@@ -1074,10 +1343,7 @@ Unknown pdb chain %s:%s
             if p in pubmed_dict:
                 pubmed=pubmed_dict[p]+' '+pubmed
             pubmed_list.append("<li>"+pubmed+"</li>")
-        if rnacentral:
-            pubmed='''<tr>'''
-        else:
-            pubmed='''<tr bgcolor="#DEDEDE">'''
+        pubmed='''<tr bgcolor="#DEDEDE">'''
         pubmed+='''<td align=center><strong>PubMed</strong></td><td>%s</td></tr>'''%(''.join(pubmed_list))
             
             
@@ -1101,12 +1367,10 @@ Unknown pdb chain %s:%s
             <a href=http://rna.bgsu.edu/rna3dhub/pdb/$pdbid target=_blank>BGSU RNA</a>
         </td>
     </tr>
-    $rnacentral
     $pubmed
     </tr>
 '''.replace("$pdbid",pdbid
   ).replace("$pubmed",pubmed
-  ).replace("$rnacentral",rnacentral
   ))
     
     print('''</table>
