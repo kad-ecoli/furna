@@ -2603,8 +2603,7 @@ int cif2chain(const string &infile, const string &outfile,
     map<string,int> _atom_site;
     map<string,int> _pdbx_struct_mod_residue;
     map<string,int> _struct_asym;
-    map<string,int> _entity_src_gen;
-    map<string,int> _entity_src_nat;
+    map<string,int> _entity_src;
     string parent_comp_id="";
 
     string group_PDB  =""; // (ATOM/HETATM)
@@ -2648,12 +2647,9 @@ int cif2chain(const string &infile, const string &outfile,
     string _struct_asym_id;
     string _struct_asym_entity_id;
     map<string,string> auth_asym_id2label_asym_id;
-    map<string,string> entity_id_gen2taxon;
-    map<string,string> entity_id_nat2taxon;
-    string _entity_src_gen_entity_id;
-    string _entity_src_gen_taxon; 
-    string _entity_src_nat_entity_id;
-    string _entity_src_nat_taxon;
+    map<string,string> entity_id2taxon;
+    string _entity_src_entity_id;
+    string _entity_src_taxon; 
 
     size_t l;
     size_t a,c,r;
@@ -2683,23 +2679,17 @@ int cif2chain(const string &infile, const string &outfile,
                 _struct_asym_id.clear();
                 _struct_asym_entity_id.clear();
             }
-            if (_entity_src_gen_entity_id.size() && _entity_src_gen_taxon.size())
+            if (_entity_src_entity_id.size() && _entity_src_taxon.size() &&
+                _entity_src_taxon!="?")
             {
-                entity_id_gen2taxon[_entity_src_gen_entity_id]=_entity_src_gen_taxon;
-                _entity_src_gen_entity_id.clear();
-                _entity_src_gen_taxon.clear();
-            }
-            if (_entity_src_nat_entity_id.size() && _entity_src_nat_taxon.size())
-            {
-                entity_id_nat2taxon[_entity_src_nat_entity_id]=_entity_src_nat_taxon;
-                _entity_src_nat_entity_id.clear();
-                _entity_src_nat_taxon.clear();
+                entity_id2taxon[_entity_src_entity_id]=_entity_src_taxon;
+                _entity_src_entity_id.clear();
+                _entity_src_taxon.clear();
             }
             _atom_site.clear();
             _pdbx_struct_mod_residue.clear();
             _struct_asym.clear();
-            _entity_src_gen.clear();
-            _entity_src_nat.clear();
+            _entity_src.clear();
             loop_=false;
         }
         else if (line_vec.size()==1 && line_vec[0]=="loop_")
@@ -2776,7 +2766,7 @@ int cif2chain(const string &infile, const string &outfile,
             _struct_asym_id.clear();
             _struct_asym_entity_id.clear();
         }
-        else if (StartsWith(line,"_entity_src_gen."))
+        else if (StartsWith(line,"_entity_src_") || StartsWith(line,"_pdbx_entity_src_"))
         {
             if (loop_)
             {
@@ -2785,68 +2775,42 @@ int cif2chain(const string &infile, const string &outfile,
                 Split(line,line_vec,'.');
                 if (line_vec.size()>1)
                 {
-                    j=_entity_src_gen.size();
+                    j=_entity_src.size();
                     line=line_vec[1];
-                    _entity_src_gen[line]=j;
+                    if (EndsWith(line,"ncbi_taxonomy_id") && 
+                       !EndsWith(line,"host_org_ncbi_taxonomy_id"))
+                    {
+                        if (_entity_src.count("ncbi_taxonomy_id")==0)
+                            _entity_src["ncbi_taxonomy_id"]=j;
+                        else if (line=="ncbi_taxonomy_id")
+                            _entity_src[".ncbi_taxonomy_id"]=j;
+                        else
+                            _entity_src[line]=j;
+                    }
+                    else _entity_src[line]=j;
                 }
             }
             else
             {
                 l=read_semi_colon(line_vec, 2, l, lines, line_append_vec, line,false,true);
-                if      (line_vec[0]=="_entity_src_gen.entity_id")
-                    _entity_src_gen_entity_id=Trim(line_vec[1],"\"");
-                else if (line_vec[0]=="_entity_src_gen.pdbx_gene_src_ncbi_taxonomy_id")
-                    _entity_src_gen_taxon=Trim(line_vec[1],"\"");
+                if      (EndsWith(line_vec[0],".entity_id"))
+                    _entity_src_entity_id=Trim(line_vec[1],"\"");
+                else if (EndsWith(line_vec[0],"ncbi_taxonomy_id") &&
+                        !EndsWith(line_vec[0],"host_org_ncbi_taxonomy_id"))
+                    _entity_src_taxon=Trim(line_vec[1],"\"");
             }
         }
-        else if (_entity_src_gen.size() && _entity_src_gen.count("entity_id") &&
-                 _entity_src_gen.count("pdbx_gene_src_ncbi_taxonomy_id"))
+        else if (_entity_src.size() && _entity_src.count("entity_id") &&
+                 _entity_src.count("ncbi_taxonomy_id"))
         {
-            l=read_semi_colon(line_vec, _entity_src_gen.size(),
+            l=read_semi_colon(line_vec, _entity_src.size(),
                 l, lines, line_append_vec, line,false,true);
-            _entity_src_gen_entity_id=Trim(line_vec[_entity_src_gen["entity_id"]],"\"");
-            _entity_src_gen_taxon=Trim(line_vec[_entity_src_gen["pdbx_gene_src_ncbi_taxonomy_id"]],"\"");
-            entity_id_gen2taxon[_entity_src_gen_entity_id]=_entity_src_gen_taxon;
-            //cout<<"_entity_src_gen\t"<<_entity_src_gen_entity_id<<" => "
-                 //<<entity_id_gen2taxon[_entity_src_gen_entity_id]<<endl;
-            _entity_src_gen_entity_id.clear();
-            _entity_src_gen_taxon.clear();
-        }
-        else if (StartsWith(line,"_entity_src_nat."))
-        {
-            if (loop_)
-            {
-                line=line_vec[0];
-                clear_line_vec(line_vec);
-                Split(line,line_vec,'.');
-                if (line_vec.size()>1)
-                {
-                    j=_entity_src_nat.size();
-                    line=line_vec[1];
-                    _entity_src_nat[line]=j;
-                }
-            }
-            else
-            {
-                l=read_semi_colon(line_vec, 2, l, lines, line_append_vec, line,false,true);
-                if      (line_vec[0]=="_entity_src_nat.entity_id")
-                    _entity_src_nat_entity_id=Trim(line_vec[1],"\"");
-                else if (line_vec[0]=="_entity_src_nat.pdbx_ncbi_taxonomy_id")
-                    _entity_src_nat_taxon=Trim(line_vec[1],"\"");
-            }
-        }
-        else if (_entity_src_nat.size() && _entity_src_nat.count("entity_id") &&
-                 _entity_src_nat.count("pdbx_ncbi_taxonomy_id"))
-        {
-            l=read_semi_colon(line_vec, _entity_src_nat.size(),
-                l, lines, line_append_vec, line,false,true);
-            _entity_src_nat_entity_id=Trim(line_vec[_entity_src_nat["entity_id"]],"\"");
-            _entity_src_nat_taxon=Trim(line_vec[_entity_src_nat["pdbx_ncbi_taxonomy_id"]],"\"");
-            entity_id_nat2taxon[_entity_src_nat_entity_id]=_entity_src_nat_taxon;
-            //cout<<"_entity_src_nat\t"<<_entity_src_nat_entity_id<<" => "
-                 //<<entity_id_nat2taxon[_entity_src_nat_entity_id]<<endl;
-            _entity_src_nat_entity_id.clear();
-            _entity_src_nat_taxon.clear();
+            _entity_src_entity_id=Trim(line_vec[_entity_src["entity_id"]],"\"");
+            _entity_src_taxon=Trim(line_vec[_entity_src["ncbi_taxonomy_id"]],"\"");
+            if (_entity_src_taxon!="?")
+                entity_id2taxon[_entity_src_entity_id]=_entity_src_taxon;
+            _entity_src_entity_id.clear();
+            _entity_src_taxon.clear();
         }
         else if (StartsWith(line,"_atom_site."))
         {
@@ -3041,12 +3005,9 @@ int cif2chain(const string &infile, const string &outfile,
         {
             string entity_id=label_asym_id2entity_id[label_asym_id];
             fout_buf<<"SOURCE    MOL_ID: "<<entity_id<<";"<<endl;
-            if (entity_id_gen2taxon.count(entity_id))
+            if (entity_id2taxon.count(entity_id))
                 fout_buf<<"SOURCE   1 ORGANISM_TAXID: "
-                    <<entity_id_gen2taxon[entity_id]<<";"<<endl;
-            else if (entity_id_nat2taxon.count(entity_id))
-                fout_buf<<"SOURCE   1 ORGANISM_TAXID: "
-                    <<entity_id_nat2taxon[entity_id]<<";"<<endl;
+                    <<entity_id2taxon[entity_id]<<";"<<endl;
             entity_id.clear();
         }
         label_asym_id.clear();
@@ -3101,9 +3062,14 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
     {
         fout_buf<<"TER"<<endl;
         //cout<<outfile<<endl;
-        fout.open(outfile.c_str());
-        fout<<fout_buf.str()<<flush;
-        fout.close();
+        if (outfile=="-")
+            cout<<fout_buf.str()<<flush;
+        else
+        {
+            fout.open(outfile.c_str());
+            fout<<fout_buf.str()<<flush;
+            fout.close();
+        }
     }
     else
     {
@@ -3129,8 +3095,7 @@ COLUMNS        DATA  TYPE    FIELD        DEFINITION
     map<string,string>().swap(modres_dict);
     map<string,string> ().swap(label_asym_id2entity_id);
     map<string,string> ().swap(auth_asym_id2label_asym_id);
-    map<string,string> ().swap(entity_id_gen2taxon);
-    map<string,string> ().swap(entity_id_nat2taxon);
+    map<string,string> ().swap(entity_id2taxon);
     return 0;
 }
 
