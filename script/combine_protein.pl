@@ -150,7 +150,22 @@ foreach my $line(`zcat $rootdir/sifts/pdb_chain_uniprot.tsv.gz |cut -f1,2,3|uniq
     }
 }
 
-my $txt="#pdb\tchain\tL\tuniprot\tEC\tGO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\n";
+print "$rootdir/pdb/derived_data/pdb_seqres.txt\n";
+my %name_dict;
+foreach my $line(`grep '>' $rootdir/pdb/derived_data/pdb_seqres.txt |grep -F mol:protein`)
+{
+    chomp($line);
+    if ($line=~/>(\w+)_(\w+)\s+mol:protein\s+length:\d+\s+([\s\S]+)/)
+    {
+        my $pdbid="$1";
+        my $chainid="$2";
+        my $name="$3";
+        my $target="$pdbid:$chainid";
+        $name_dict{$target}=$name;
+    }
+}
+
+my $txt="#pdb\tchain\tL\tuniprot\tEC\tGO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\tname\n";
 foreach my $target(@target_list)
 {
     if ($target=~/(\w+):(\w+)/)
@@ -165,6 +180,7 @@ foreach my $target(@target_list)
         my $go_bp="";
         my $go_cc="";
         my $taxon="";
+        my $name="";
         if (exists($uniprot_dict{$target}))
         {
             $uniprot=$uniprot_dict{$target};
@@ -209,7 +225,11 @@ foreach my $target(@target_list)
         {
             $taxon=$taxon_dict{$target};
         }
-        $txt.="$pdbid\t$chainid\t$L\t$uniprot\t$ec\t$go_mf\t$go_bp\t$go_cc\t$taxon\t$sequence\n";
+        if (exists($name_dict{$target}))
+        {
+            $name=$name_dict{$target};
+        }
+        $txt.="$pdbid\t$chainid\t$L\t$uniprot\t$ec\t$go_mf\t$go_bp\t$go_cc\t$taxon\t$sequence\t$name\n";
     }
 }
 open(FP,">$rootdir/data/protein.tsv");
