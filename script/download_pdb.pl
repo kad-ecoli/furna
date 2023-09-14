@@ -8,6 +8,9 @@ my $rootdir = dirname($bindir);
 print "download PDB\n";
 system("mkdir -p $rootdir/pdb/derived_data/index/");
 system("mkdir -p $rootdir/pdb/data/monomers/");
+&download_from_pdb("derived_data/pdb_seqres.txt",
+               "pdb/derived_data/pdb_seqres.txt");
+
 &download_from_pdb("data/monomers/components.cif.gz",
                "pdb/data/monomers/components.cif.gz");
 
