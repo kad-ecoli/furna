@@ -473,9 +473,25 @@ foreach my $line(`cat $rootdir/goa/is_a.csv`)
     $isa_dict{$GOterm}=$parent;
 }
 
+
+print "$rootdir/pdb/derived_data/pdb_seqres.txt\n";
+my %name_dict;
+foreach my $line(`grep '>' $rootdir/pdb/derived_data/pdb_seqres.txt |grep -F mol:na`)
+{
+    chomp($line);
+    if ($line=~/>(\w+)_(\w+)\s+mol:na\s+length:\d+\s+([\s\S]+)/)
+    {
+        my $pdbid="$1";
+        my $chainid="$2";
+        my $name="$3";
+        my $target="$pdbid:$chainid";
+        $name_dict{$target}=$name;
+    }
+}
+
 print "$rootdir/data/rna.tsv\n";
 my $txt="#pdb\tchain\tL\tresolution\tRfam\tRNAcentral\tpubmed\t";
-$txt.="EC\tGO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\tcssr\tdssr\ttitle\n";
+$txt.="EC\tGO_MF\tGO_BP\tGO_CC\ttaxon\tsequence\tcssr\tdssr\ttitle\tname\n";
 foreach my $target(@target_list)
 {
     if ($target=~/(\w+):(\w+)/)
@@ -496,6 +512,7 @@ foreach my $target(@target_list)
         my $cssr   ="";
         my $dssr   ="";
         my $title  ="";
+        my $name="";
 
         if (exists($resolu_dict{$pdbid}))
         {
@@ -577,6 +594,10 @@ foreach my $target(@target_list)
         {
             $title="$title_dict{$pdbid}";
         }
+        if (exists($name_dict{$target}))
+        {
+            $name=$name_dict{$target};
+        }
         
         my $sequence=$fasta_dict{$chain};
         my $L=length $sequence;
@@ -622,8 +643,7 @@ foreach my $target(@target_list)
         }
         $EC_list=substr($EC_list,1) if ($EC_list=~/^,/);
 
-        $txt.="$pdbid\t$chainid\t$L\t$resolu\t$rfam\t$rnacentral\t$pubmed\t";
-        $txt.="$EC_list\t$GO_MF\t$GO_BP\t$GO_CC\t$taxon\t$sequence\t$cssr\t$dssr\t$title\n";
+        $txt.="$pdbid\t$chainid\t$L\t$resolu\t$rfam\t$rnacentral\t$pubmed\t$EC_list\t$GO_MF\t$GO_BP\t$GO_CC\t$taxon\t$sequence\t$cssr\t$dssr\t$title\t$name\n";
     }
 }
 open(FP,">$rootdir/data/rna.tsv");
