@@ -93,6 +93,13 @@ for line in fp.read().splitlines()[1:]:
     taxon_dict[items[0]]=items[1]
 fp.close()
 
+rnacentral_dict=dict()
+fp=gzip.open(rootdir+"/data/RNAcentral.fasta.gz",'rt')
+for block in ('\n'+fp.read()).split('\n>')[1:]:
+    header=block.split()[0]
+    rnacentral_dict[header]='>'+block
+fp.close()
+
 parent_dict=dict()
 if got and got!='0':
     fp=gzip.open(rootdir+"/data/parent.tsv.gz",'rt')
@@ -306,8 +313,13 @@ for l in range(totalNum):
     if rnacentral:
         rnacentral_list=[]
         for a in rnacentral.split(','):
-            a=a.split('_')[0]
-            a="<a href=https://rnacentral.org/rna/%s target=_blank>%s</a>"%(a,a)
+            spantitle=""
+            if a in rnacentral_dict:
+                spantitle=rnacentral_dict[a]
+            a,t=a.split('_')
+            a="<a href=https://rnacentral.org/rna/%s/%s target=_blank>%s</a>"%(a,t,a)
+            if spantitle:
+                a='<span title="%s">%s</span>'%(spantitle,a)
             rnacentral_list.append(a)
         rnacentral='<br>'.join(rnacentral_list)
     else:
@@ -525,7 +537,7 @@ print('''
     <th><strong> Rfam </strong> </th>           
     <th><strong> Taxon </strong> </th>           
     <th><strong> PubMed </strong> </th>           
-    <th><strong> Ligand </strong> </th>           
+    <th><strong> Ligand &amp; binding nucleotides</strong> </th>           
 </tr><tr>
 ''')
 print(html_txt)
