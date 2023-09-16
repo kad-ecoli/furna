@@ -47,12 +47,13 @@ void fasta2miss(const string &inputListFile, const string &inputFastaFile,
     cerr<<inputList.size()<<" entries in "<<inputListFile<<endl;
 
     /* read fasta file */
-    string sequence,header;
+    string sequence,header,header1;
     map<string,bool> headerMap;
     if (inputFastaFile!="-") fp_in.open(inputFastaFile.c_str());
     if (outputFastaFile!="-") fp_out.open(outputFastaFile.c_str());
     size_t found=0;
     size_t headerNum=0;
+    size_t i;
     while ((inputFastaFile!="-")?fp_in.good():cin.good())
     {
         if (inputFastaFile!="-") getline(fp_in,line);
@@ -60,7 +61,9 @@ void fasta2miss(const string &inputListFile, const string &inputFastaFile,
         if (line.size()==0) continue;
         if (line[0]=='>')
         {
-            if (sequence.size()>0 && inputMap.count(header))
+            for (i=0;i<header.size();i++) if (header[i]==' ') break;
+            header1=header.substr(0,i);
+            if (sequence.size()>0 && inputMap.count(header1))
             {
                 if (outputFastaFile!="-") 
                     fp_out<<'>'<<header<<'\n'<<sequence<<endl;
@@ -70,7 +73,7 @@ void fasta2miss(const string &inputListFile, const string &inputFastaFile,
                 if (found % 1000 == 0) cerr<<"Found "<<found<<" out of "
                     <<inputList.size()<<" input list among "
                     <<headerNum<<" input fasta"<<endl;
-                headerMap[header]=1;
+                headerMap[header1]=1;
             }
             sequence.clear();
             header=line.substr(1);
@@ -79,13 +82,15 @@ void fasta2miss(const string &inputListFile, const string &inputFastaFile,
         else sequence+=line;
     }
     if (inputListFile!="-") fp_in.close();
-    if (sequence.size()>0 && inputMap.count(header))
+    for (i=0;i<header.size();i++) if (header[i]==' ') break;
+    header1=header.substr(0,i);
+    if (sequence.size()>0 && inputMap.count(header1))
     {
         found++;
         if (outputFastaFile!="-")
             fp_out<<'>'<<header<<'\n'<<sequence<<endl;
         else  cout<<'>'<<header<<'\n'<<sequence<<endl;
-        headerMap[header]=1;
+        headerMap[header1]=1;
     }
     if (outputFastaFile!="-") fp_out.close();
     header.clear();
@@ -94,7 +99,6 @@ void fasta2miss(const string &inputListFile, const string &inputFastaFile,
         <<" input list among "<<headerNum<<" input fasta"<<endl;
 
     /* write missing list */
-    size_t i;
     for (i=0;i<inputList.size();i++)
         if (headerMap.count(inputList[i])==0)
             txt+=inputList[i]+'\n';
