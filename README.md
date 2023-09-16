@@ -49,5 +49,6 @@ script/download_taxon.pl
 script/fasta2taxon.pl
 script/plot_goa.pl
 script/make_summary.pl
+script/combine_dna.pl
 ```
 
