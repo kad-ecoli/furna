@@ -6,3 +6,5 @@ script/fasta2miss
 script/cif2pdb
 script/CSSR
 script/Arena
+script/fasta2freq
+script/fasta2taxon

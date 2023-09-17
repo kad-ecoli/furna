@@ -50,5 +50,6 @@ script/fasta2taxon.pl
 script/plot_goa.pl
 script/make_summary.pl
 script/combine_dna.pl
+script/curate_blastdb.pl
 ```
 
