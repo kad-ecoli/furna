@@ -218,7 +218,7 @@
     <li><a href="index.cgi#by_name">SEARCH</a>
         <ul>
         <li><a href="index.cgi#by_name">Search by name</a></li>
-        <!--<li><a href="index.cgi#by_seq">Search by sequence</a></li>-->
+	<li><a href="index.cgi#by_seq">Search by sequence</a></li>
         <!--<li><a href="index.cgi#by_struct">Search by structure</a></li>-->
         </ul>
     </li>
@@ -275,13 +275,6 @@ function example_protein()
     var STR=IO("example/protein.fasta");
     document.ssearchForm.sequence.value = STR;
     document.ssearchForm.seq_type.value = "protein";
-}
-
-function example_peptide()
-{
-    var STR=IO("example/peptide.fasta");
-    document.ssearchForm.sequence.value = STR;
-    document.ssearchForm.seq_type.value = "peptide";
 }
 
 function example_rna()
@@ -370,7 +363,6 @@ function example_pdbfile()
 </FORM>
 <p></p>
 
-<!--
 <p>
 <a name="by_seq">
 <h1><u>Search database by sequence</u></h1>
@@ -378,18 +370,15 @@ function example_pdbfile()
 </p>
 <FORM name="ssearchForm" METHOD=POST ACTION="ssearch.cgi"  onsubmit="return checkform(this);">
 Paste your sequence here:&nbsp;&nbsp;&nbsp;&nbsp;
-[<a href="javascript:example_protein()">Sample protein input</a>]
-[<a href="javascript:example_peptide()">Sample peptide input</a>]
 [<a href="javascript:example_rna()">Sample rna input</a>]
+[<a href="javascript:example_protein()">Sample protein input</a>]
 [<a href="javascript:example_dna()">Sample dna input</a>]<br>
-<textarea name="sequence" rows=6 cols=80 placeholder="Example:
-ATPHINAEMGDFADVVLMPGDPLRAKYIAETFLEDAREVNNVRGMLGFTGTYKGRKISVMGHGMGIPSCSIYTKELITDFGVKKIIRVGSCGAVLPHVKLRDVVIGMGACTDSKVNRIRFKDHDFAAIADFDMVRNAVDAAKALGIDARVGNLFSADLFYSPDGEMFDVMEKYGILGVEMEAAGIYGVAAEFGAKALTICTVSDHIRTHEQTTAAERQTTFNDMIKIALESVLLGDKE"></textarea>
+<textarea name="sequence" rows=6 cols=80 placeholder="Example: cccgcuuaauucauucagaucuguaauagaacugucauucaaccccaaaaaucuagugcugauauaaccuucaccaauuagguucaaauaagugguaaug"></textarea>
 <br>
 Select Sequence type:&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="seq_type" value="protein" checked>Protein receptor&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="seq_type" value="peptide">Peptide ligand&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="seq_type" value="rna">RNA ligand&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="seq_type" value="dna">DNA ligand
+<input type="radio" name="seq_type" value="rna" checked>RNA&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="seq_type" value="protein">Protein&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="seq_type" value="dna">DNA
 <br>
 <span title="Sequences &ge; and &lt;30 residues will be searched by BLAST and
 Needleman-Wunsch alignment (NW-align), respectively.">
@@ -400,7 +389,7 @@ Needleman-Wunsch alignment (NW-align), respectively.">
 </FORM>
 <p></p>
 
-
+<!--
 <p>
 <a name="by_struct">
 <h1><u>Search database by RNA structure</u></h1>
