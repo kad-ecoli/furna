@@ -1455,6 +1455,7 @@ def display_asymetric_unit(pdbid):
         if not asym_id in ligand_info_dict:
             ligand_info_dict[asym_id]="Assembly"+items[2]
 
+
         if ccd in ["protein","rna","dna"]:
             if ccd=="protein":
                 spantitle="Protein"
@@ -1466,7 +1467,7 @@ def display_asymetric_unit(pdbid):
             else:
                 spantitle+=ligSequence[:100]+"..."
         elif ccd in ligand_dict:
-            spantitle=ligand_dict[ccd]
+            spantitle=ligand_dict[ccd][4]
         else:
             spantitle=ccd
         spantitle+="\nChain ID of the ligand: %s\nResidue sequence number of the ligand: %s\nBinding nucleotides on the RNA receptor: %s\n"%(ligCha,resSeq,residueOriginal)
