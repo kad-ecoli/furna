@@ -347,7 +347,7 @@ def display_regular_ligand(ligand_info_list,ligand_dict):
     return
 
 def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,
-    go_dict,rfam_dict,rna_info_list,rnacentral_dict):
+    go_dict,rfam_dict,rna_info_list,rnacentral_dict,uniprot_dict):
     pdbid          =ligand_info_list[0]
     asym_id        =ligand_info_list[1]
     assembly       =ligand_info_list[2]
@@ -425,7 +425,10 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,
                 for u,uniprot in enumerate(uniprot_list):
                     if u:
                         polymer_table+="<br>"
-                    polymer_table+="<a href=https://uniprot.org/uniprotkb/%s target=_blank>%s</a> "%(uniprot,uniprot)
+                    uniprot_html="<a href=https://uniprot.org/uniprotkb/%s target=_blank>%s</a>"%(uniprot,uniprot)
+                    if uniprot in uniprot_dict:
+                        uniprot_html=uniprot_dict[uniprot].replace('|'+uniprot+'|','|'+uniprot_html+'|')
+                    polymer_table+=uniprot_html
                 polymer_table+="</td></tr>"
 
 
@@ -1231,6 +1234,15 @@ def read_rnacentral():
     fp.close()
     return rnacentral_dict
 
+def read_uniprot():
+    uniprot_dict=dict()
+    fp=gzip.open(rootdir+"/data/uniprot.tsv.gz",'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        uniprot_dict[items[0]]=items[1]
+    fp.close()
+    return uniprot_dict
+
 def extract_ligand(pdbid,asym_id,lig3,ligCha,ligIdx):
     divided=pdbid[-3:-1]
     prefix=pdbid+asym_id
@@ -1720,6 +1732,7 @@ Unknown pdb chain %s:%s
     rfam_dict=read_rfam()
     ligand_dict=read_ligand()
     rnacentral_dict=read_rnacentral()
+    uniprot_dict=read_uniprot()
 
     display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
         go_dict,rfam_dict,rnacentral_dict)
@@ -1731,8 +1744,9 @@ Unknown pdb chain %s:%s
             if not lig3 in ["protein","dna","rna"]:
                 display_regular_ligand(ligand_info_list,ligand_dict)
             else:
-                display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,
-                    ec_dict,go_dict,rfam_dict,rna_info_list,rnacentral_dict)
+                display_polymer_ligand(ligand_info_list,taxon_dict,
+                    parent_dict,ec_dict,go_dict,rfam_dict,rna_info_list,
+                    rnacentral_dict,uniprot_dict)
     else:
         display_interaction_list(pdbid,asym_id,ligand_dict)
    
