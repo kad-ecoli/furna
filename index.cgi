@@ -32,7 +32,8 @@ else:
 filename=rootdir+"/data/index.txt"
 if os.path.isfile(filename):
     fp=open(filename,'r')
-    print(fp.read())
+    print(fp.read().replace("Database statistics",
+               "<a name=stat>Database statistics</a>"))
     fp.close()
 
 cmd="ls output/*.cif.gz output/*.ent.gz|shuf|cut -f2 -d/|cut -f1 -d.|head -1"
