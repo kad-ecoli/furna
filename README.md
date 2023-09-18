@@ -51,5 +51,6 @@ script/plot_goa.pl
 script/make_summary.pl
 script/combine_dna.pl
 script/curate_blastdb.pl
+script/download_uniprot.pl
 ```
 
