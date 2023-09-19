@@ -100,6 +100,13 @@ for block in ('\n'+fp.read()).split('\n>')[1:]:
     rnacentral_dict[header]='>'+block
 fp.close()
 
+uniprot_dict=dict()
+fp=gzip.open(rootdir+"/data/uniprot.tsv.gz",'rt')
+for line in fp.read().splitlines():
+    items=line.split('\t')
+    uniprot_dict[items[0]]=items[1]
+fp.close()
+
 parent_dict=dict()
 if got and got!='0':
     fp=gzip.open(rootdir+"/data/parent.tsv.gz",'rt')
@@ -161,6 +168,16 @@ if outfmt!='txt':
 <p><a href=.>[Back to Home]</a></p>
 ''')
 
+chain2accession=dict()
+cmd="zcat %s/data/protein.tsv.gz |cut -f1,2,4|grep -v '^#'|grep -vP '\\t$'"%(rootdir)
+p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+stdout,stderr=p.communicate()
+for line in stdout.decode().splitlines():
+    items=line.split('\t')
+    chain2accession[':'.join(items[:2])]=items[2]
+    if items[2] in uniprot_dict:
+        chain2accession[':'.join(items[:2])]=uniprot_dict[items[2]]
+
 hasChain_dict=dict()
 if chain:
     for key in interaction_dict:
@@ -214,6 +231,10 @@ for line in fp.read().splitlines()[1:]:
 
     if pdbid and pdb!=pdbid:
         continue
+    if rnacentral:
+        chain2accession[pdb+':'+recCha]=rnacentral
+        if rnacentral in rnacentral_dict:
+            chain2accession[pdb+':'+recCha]=rnacentral_dict[rnacentral].splitlines()[0][1:]
     if chain and recCha!=chain and not pdbid+':'+recCha in hasChain_dict:
         continue
 
@@ -386,7 +407,9 @@ for l in range(totalNum):
         ccd_dict=dict()
         ccd_list=[]
         for items in interaction_list:
-            ccd=items[1]
+            ccd   =items[1]
+            ligCha=items[2]
+            ligIdx=items[3]
             if not ccd in ccd_dict:
                 ccd_list.append(ccd)
                 ccd_dict[ccd]=[]
@@ -396,12 +419,17 @@ for l in range(totalNum):
                     spantitle="Protein"
                 else:
                     spantitle=ccd.upper()
-                spantitle+=" sequence: "+items[-1]
+                spantitle+=" sequence:\n"+items[-1]
+                key=pdb+':'+ligCha.split('-')[0]
+                if key in chain2accession:
+                    spantitle=">"+chain2accession[key]+'\n'+items[-1]
+                else:
+                    spantitle=">"+key+'\n'+items[-1]
             elif ccd in ligand_dict:
                 spantitle=ligand_dict[ccd]
             else:
                 spantitle=ccd
-            spantitle+="\nChain ID of the ligand: %s\nResidue sequence number of the ligand: %s\nBinding nucleotides on the RNA receptor: %s\n"%(items[2],items[6],items[4])
+            spantitle+="\nChain ID of the ligand: %s\nResidue sequence number of the ligand: %s\nBinding nucleotides on the RNA receptor: %s\n"%(ligCha,items[6],items[4])
 
             bs_list=[bs[1:] for bs in items[4].split()]
             bs_txt=''
@@ -424,8 +452,8 @@ for l in range(totalNum):
             ccd_dict[ccd].append('''<span title="%s">
             <a href=pdb.cgi?pdbid=%s&chain=%s&lig3=%s&ligCha=%s&ligIdx=%s>
             %s:%s:%s</a> %s</span>'''%(spantitle,
-                pdb,recCha,ccd,items[2],items[3],
-                ccd,items[2],items[6].replace(' ',''),
+                pdb,recCha,ccd,ligCha,ligIdx,
+                ccd,ligCha,items[6].replace(' ',''),
                 '<br>'.join(textwrap.wrap(bs_txt,maxwidth))))
 
         for ccd in ccd_list:
