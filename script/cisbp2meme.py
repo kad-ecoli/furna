@@ -42,7 +42,7 @@ for line in fin.read().splitlines()[1:]:
     x.append(line.split('\t')[1:])
 fin.close()
 
-if len(args.freq_file):
+if args.freq_file:
     fin = open(args.freq_file, 'r')
     freq_txt=fin.read().strip()
     fin.close()
@@ -51,7 +51,11 @@ result = template.substitute(
     name=pwm_name, freq_txt=freq_txt, width=len(x), nsites=len(x))
     
 for row in x:
-    result += "  ".join(["{:.6g}".format(float(e)) for e in row]) + "\n"
+    total=sum([float(e) for e in row])
+    if total<1:
+        result += "  ".join(["{:.6g}".format(float(e)/total) for e in row]) + "\n"
+    else:
+        result += "  ".join(["{:.6g}".format(float(e)) for e in row]) + "\n"
     #result += "  ".join(row[1].map(lambda x: "{:.6}".format(x))) + "\n"
     
 outfile=open(args.out_file, 'w')

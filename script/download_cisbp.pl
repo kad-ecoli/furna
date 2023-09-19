@@ -13,6 +13,17 @@ system("mkdir -p $rootdir/cisbp/");
 #system("cd $rootdir/cisbp; unzip -o TF_Information_all_motifs.txt.zip");
 #system("cd $rootdir/cisbp; unzip -o PWMs.zip");
 
+print "$rootdir/data/rna.tsv.gz\n";
+my %taxon_dict;
+foreach my $line(`zcat $rootdir/data/rna.tsv.gz |grep -v '^#'|cut -f12|sort|uniq`)
+{
+    chomp($line);
+    $taxon_dict{$line}=1;
+}
+my $taxon_num=scalar %taxon_dict;
+print "$taxon_num species\n";
+
+
 print "$rootdir/data/taxon.tsv.gz\n";
 my %species2taxon;
 foreach my $line(`zcat $rootdir/data/taxon.tsv.gz`)
@@ -20,10 +31,13 @@ foreach my $line(`zcat $rootdir/data/taxon.tsv.gz`)
     chomp($line);
     my @items=split(/\t/,$line);
     my $taxon=$items[0];
+    next if (!exists($taxon_dict{$taxon}));
     my $species=$items[1];
     $species=~s/ /_/g;
     $species2taxon{$species}=$taxon;
 }
+$taxon_num=scalar %species2taxon;
+print "$taxon_num species\n";
 
 my @motif_list;
 my %motif_dict;
@@ -41,11 +55,12 @@ foreach my $line(`cat $rootdir/cisbp/TF_Information_all_motifs.txt`)
     if (!exists($motif_dict{$Motif_ID}))
     {
         push(@motif_list,($Motif_ID));
-        $motif_dict{$Motif_ID}=$line;
+        $motif_dict{$Motif_ID}=1;
     }
     $txt.="$line\n";
 }
 
+print "$rootdir/data/TF_Information_all_motifs.txt\n";
 system("head -1 $rootdir/cisbp/TF_Information_all_motifs.txt > $rootdir/data/TF_Information_all_motifs.txt");
 open(FP,">>$rootdir/data/TF_Information_all_motifs.txt");
 print FP "$txt";
@@ -59,7 +74,7 @@ foreach my $taxon(`cat $rootdir/data/TF_Information_all_motifs.txt |cut -f8|uniq
     push(@taxon_list,($taxon));
     $fasta_dict{$taxon}="";
 }
-my $taxon_num=scalar @taxon_list;
+$taxon_num=scalar @taxon_list;
 print "$taxon_num taxon\n";
 
 my %Motif2taxon;
@@ -72,6 +87,8 @@ foreach my $line(`cat $rootdir/data/TF_Information_all_motifs.txt|cut -f4,8|grep
         $Motif2taxon{$Motif_ID}=$taxon;
     }
 }
+my $motif_num=scalar %Motif2taxon;
+print "$motif_num motif\n";
 
 foreach my $taxon(@taxon_list)
 {
@@ -136,13 +153,15 @@ foreach my $Motif_ID(@motif_list)
     my $out_file="$rootdir/cisbp/meme/$Motif_ID.txt";
     my $pwm_file="$rootdir/cisbp/pwms/$Motif_ID.txt";
     next if (-s "$out_file" || `cat $pwm_file|wc -l`+0<=1);
-    my $cmd="$bindir/cisbp2meme.py --pwm_file $pwm_file --out_file $out_file";
+    #my $cmd="$bindir/cisbp2meme.py --pwm_file $pwm_file --out_file $out_file";
+    my $cmd="$bindir/cisbp2meme $pwm_file $out_file ";
     if (exists($Motif2taxon{$Motif_ID}))
     {
         my $taxon="$Motif2taxon{$Motif_ID}";
         if (-s "$rootdir/genomes/$taxon.freq")
         {
-            $cmd.=" --freq_file $rootdir/genomes/$taxon.freq";
+            #$cmd.=" --freq_file $rootdir/genomes/$taxon.freq";
+            $cmd.=" $rootdir/genomes/$taxon.freq";
         }
     }
     print  "$cmd\n";

@@ -2,7 +2,7 @@ CC=g++
 CFLAGS=-O3 -std=c++11
 LDFLAGS=-static
 
-all: cif2fasta cif2chain fasta2miss fasta2taxon subset_GOA obo2csv cif2pdb fasta2freq NWalign
+all: cif2fasta cif2chain fasta2miss fasta2taxon subset_GOA obo2csv cif2pdb fasta2freq NWalign cisbp2meme
 
 cif2fasta: cif2fasta.cpp
 	${CC} ${CFLAGS} $@.cpp -o $@ ${LDFLAGS}
@@ -19,6 +19,8 @@ fasta2taxon: fasta2taxon.cpp
 fasta2freq: fasta2freq.cpp
 	${CC} ${CFLAGS} $@.cpp -o $@ ${LDFLAGS}
 
+cisbp2meme: cisbp2meme.cpp
+	${CC} ${CFLAGS} $@.cpp -o $@ ${LDFLAGS}
 
 subset_GOA: subset_GOA.cpp StringTools.hpp
 	${CC} ${CFLAGS} $@.cpp -o $@ ${LDFLAGS}
