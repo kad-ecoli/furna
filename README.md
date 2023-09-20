@@ -4,7 +4,9 @@
 ```bash
 cd script
 make
-cd ..
+cd cdhit_src/
+make
+make install
 ```
 
 Optionally, to show directed acylic graph for Gene Ontology terms on the website, the ``dot`` program from [Graphviz](https://graphviz.org/) can be used. If your system does not have Graphviz, you can install it to ``graphviz/bin/dot`` from source code:
@@ -52,5 +54,5 @@ script/make_summary.pl
 script/combine_dna.pl
 script/curate_blastdb.pl
 script/download_uniprot.pl
+script/download_attract.pl
 ```
-
