@@ -181,14 +181,10 @@ for line in stdout.decode().splitlines():
 hasChain_dict=dict()
 if chain:
     for key in interaction_dict:
-        hasChain_dict[key]=[]
         for items in interaction_dict[key]:
-            ccd=items[1]
-            if not ccd in ["protein","dna","rna"]:
-                continue
             ligCha=items[2].split('-')[0]
             if ligCha==chain:
-                hasChain_dict[key].append(ccd)
+                hasChain_dict[key]=1
 
 enzyme_dict=dict()
 fp=gzip.open(rootdir+"/data/enzyme.tsv.gz",'rt')
