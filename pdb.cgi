@@ -883,7 +883,7 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,
     return
 
 def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
-    go_dict,rfam_dict,rnacentral_dict):
+    go_dict,rfam_dict,rnacentral_dict,fimo_dict):
     pdbid     =rna_info_list[0]
     asym_id   =rna_info_list[1]
     L     =int(rna_info_list[2])
@@ -1033,6 +1033,82 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
             name=name[1:-1]
         name='('+name+')'
 
+    fimo_table=''
+    if target in fimo_dict:
+        
+        cmd="zcat %s|grep -P '^ATOM  '|cut -c23-27|uniq"%chainfile
+        p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+        stdout,stderr=p.communicate()
+        resi_list=stdout.decode().splitlines()
+        #print(resi_list)
+
+        fimo_table='''<tr><td align=center><strong>ATtRACT<br>motif</strong>
+    </td><td><table width=100%>
+    <tr align=center bgcolor="#DEDEDE">
+        <th>Motif<br>ID</th>
+        <th>Logo</th>
+        <th>Matched sequence<br>(residue number) qvalue</th>
+        <th>Binding<br>protein</th>
+        <th>PubMed<br>for motif</th>
+    </tr>'''
+        motif_dict=dict()
+        motif_list=[]
+        for line in fimo_dict[target]:
+            resi1    =line[0]
+            resi2    =line[1]
+            qvalue   =line[2]
+            Motif_seq=line[3].replace('T','U').lower()
+            Motif_ID =line[4]
+            Gene_name=line[5]
+            Gene_id  =line[6]
+            #citation =line[7]
+            citation_list=[]
+            if not "not available" in line[7]:
+                for citation in line[7].split(';'):
+                    citation_list.append('''<a href=https://pubmed.ncbi.nlm.nih.gov/$citation target=_blank>$citation</a>'''.replace("$citation",citation))
+                
+            pngfile="data/attract/logo"+Motif_ID.replace('.','_').replace("_pfm",".pfm")+".png"
+            if not Motif_ID in motif_dict:
+                motif_list.append((Motif_ID,Gene_name,Gene_id,
+                    pngfile,'<br>'.join(citation_list)))
+                motif_dict[Motif_ID]=[]
+
+            if len(resi_list) and int(resi1)<=len(resi_list
+                            ) and int(resi2)<=len(resi_list):
+                resi1=resi_list[int(resi1)-1].strip()
+                resi2=resi_list[int(resi2)-1].strip()
+            motif_dict[Motif_ID].append("%s (%s ~ %s) qvalue=%s"%(
+                Motif_seq,resi1,resi2,qvalue))
+
+        for l,items in enumerate(motif_list):
+            bgcolor=''
+            if l % 2==1:
+                bgcolor='bgcolor="#DEDEDE"'
+            Motif_ID,Gene_name,Gene_id,pngfile,citation=items
+            Motif_match='<br>'.join(motif_dict[Motif_ID])
+                
+            fimo_table+='''
+    <tr align=center $bgcolor>
+        <td>$Motif_ID</td>
+        <td><a href=$pngfile><img src=$pngfile height=50></a></td>
+        <td>$Motif_match</td>
+        <td>$Gene_name<br>($Gene_id)</td>
+        <td>$citation</td>
+    </tr>'''.replace("$Motif_ID",Motif_ID
+           ).replace("$resi1",resi1
+           ).replace("$resi2",resi2
+           ).replace("$bgcolor",bgcolor
+           ).replace("$Motif_match",Motif_match
+           ).replace("$Gene_name",Gene_name
+           ).replace("$Gene_id",Gene_id
+           ).replace("$citation",citation
+           ).replace("$pngfile",pngfile
+           )
+            
+        fimo_table+="</table></td></tr>"
+
+    
+
     print('''
 <tr><td>
 <div id="headerDiv">
@@ -1115,6 +1191,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
     $rfam_table
     $go_table
     $ec_table
+    $fimo_table
     </table>
 </div>
 </td></tr>
@@ -1129,6 +1206,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
   ).replace("$rfam_table",rfam_table
   ).replace("$go_table" ,go_table
   ).replace("$ec_table" ,ec_table
+  ).replace("$fimo_table",fimo_table
   ).replace("$rnacentral_table",rnacentral_table
   ).replace("$name"     ,name
   ))
@@ -1242,6 +1320,18 @@ def read_uniprot():
         uniprot_dict[items[0]]=items[1]
     fp.close()
     return uniprot_dict
+
+def read_fimo():
+    fimo_dict=dict()
+    fp=gzip.open(rootdir+"/data/fimo.tsv.gz",'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        key=':'.join(items[:2])
+        if not key in fimo_dict:
+            fimo_dict[key]=[]
+        fimo_dict[key].append(items[2:])
+    fp.close()
+    return fimo_dict
 
 def extract_ligand(pdbid,asym_id,lig3,ligCha,ligIdx):
     divided=pdbid[-3:-1]
@@ -1733,9 +1823,10 @@ Unknown pdb chain %s:%s
     ligand_dict=read_ligand()
     rnacentral_dict=read_rnacentral()
     uniprot_dict=read_uniprot()
+    fimo_dict=read_fimo()
 
     display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
-        go_dict,rfam_dict,rnacentral_dict)
+        go_dict,rfam_dict,rnacentral_dict,fimo_dict)
     extract_assembly(pdbid,asym_id)
     if lig3 and ligCha and ligIdx:
         ligand_info_list=get_ligand_info(pdbid,asym_id,lig3,ligCha,ligIdx)
