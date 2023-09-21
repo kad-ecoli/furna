@@ -15,3 +15,7 @@ output/*.html
 output/*.fsearch
 output/*.cif
 output/*.pdb
+script/cdhit_src/cdhit-common.o
+script/cdhit_src/cdhit-est.o
+script/cdhit_src/cdhit-utility.o
+script/cdhit_src/cd-hit-est
