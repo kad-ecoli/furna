@@ -41,6 +41,6 @@ exit();
 sub download_from_pdb
 {
     my ($url_query,$outfile)=@_;
-    system("wget -q  ftp://files.wwpdb.org/pub/pdb/$url_query -O $rootdir/$outfile");
-    system("wget -q http://files.wwpdb.org/pub/pdb/$url_query -O $rootdir/$outfile") if (!-s "$rootdir/$outfile");
+    system("wget -q http://files.wwpdb.org/pub/pdb/$url_query -O $rootdir/$outfile");
+    system("wget -q  ftp://files.wwpdb.org/pub/pdb/$url_query -O $rootdir/$outfile") if (!-s "$rootdir/$outfile");
 }
