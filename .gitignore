@@ -10,3 +10,8 @@ script/fasta2freq
 script/fasta2taxon
 script/cisbp2meme
 script/NWalign
+output/*.gz
+output/*.html
+output/*.fsearch
+output/*.cif
+output/*.pdb
