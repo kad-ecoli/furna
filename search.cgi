@@ -236,7 +236,7 @@ for line in fp.read().splitlines()[1:]:
         chain2accession[pdb+':'+recCha]=rnacentral
         if rnacentral in rnacentral_dict:
             chain2accession[pdb+':'+recCha]=rnacentral_dict[rnacentral].splitlines()[0][1:]
-    if chain and recCha!=chain and not pdbid+':'+recCha in hasChain_dict:
+    if chain and recCha!=chain and not pdb+':'+recCha in hasChain_dict:
         continue
     if rnaname and not rnaname in title.upper():
         continue
@@ -413,6 +413,8 @@ for l in range(totalNum):
             ccd   =items[1]
             ligCha=items[2]
             ligIdx=items[3]
+            if chain and recCha!=chain and ligCha.split('-')[0]!=chain:
+                continue
             if not ccd in ccd_dict:
                 ccd_list.append(ccd)
                 ccd_dict[ccd]=[]
