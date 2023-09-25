@@ -119,6 +119,24 @@ if got and got!='0':
         parent_dict[key]=(','.join(items[2:])).replace('GO:','')
     fp.close()
 
+fimo_dict=dict()
+fp=gzip.open(rootdir+"/data/attract_fimo.tsv.gz",'rt')
+for line in fp.read().splitlines():
+    items=line.split('\t')
+    key=':'.join(items[:2])
+    if not key in fimo_dict:
+        fimo_dict[key]=[]
+    fimo_dict[key].append("attract\t"+items[6])
+fp.close()
+fp=gzip.open(rootdir+"/data/cisbp_fimo.tsv.gz",'rt')
+for line in fp.read().splitlines():
+    items=line.split('\t')
+    key=':'.join(items[:2])
+    if not key in fimo_dict:
+        fimo_dict[key]=[]
+    fimo_dict[key].append("cisbp\t"+items[6])
+fp.close()
+
 ligand_dict=dict()
 fp=gzip.open(rootdir+"/data/ligand.tsv.gz",'rt')
 for line in fp.read().splitlines()[1:]:
@@ -472,22 +490,39 @@ for l in range(totalNum):
         ecgo=go
     else:
         ecgo="N/A"
+
+    Motif_ID=''
+    key=pdb+':'+recCha
+    if key in fimo_dict:
+        motif_list=[]
+        for Motif_ID in list(set(fimo_dict[key])):
+            db,Motif_ID=Motif_ID.split('\t')
+            if db=="attract":
+                pngfile="data/attract/logo"+Motif_ID.replace('.','_')+".png"
+                motif_list.append('<span title="ATtRACT:%s"><a href=%s><img src=%s width=70></a><br>%s</span>'%(Motif_ID,pngfile,pngfile,Motif_ID))
+            elif db=="cisbp":
+                pngfile="data/cisbp/logo"+Motif_ID.replace('.','_')+".png"
+                motif_list.append('<span title="CISBP-RNA:%s"><a href=%s><img src=%s width=70></a><br>%s</span>'%(Motif_ID,pngfile,pngfile,Motif_ID))
+            else:
+                motif_list.append(Motif_ID)
+        Motif_ID='<br>'.join(motif_list)
     
     bgcolor=''
     if l%2:
         bgcolor='BGCOLOR="#DEDEDE"'
     html_txt+='''
 <tr %s>
-    <td><a href=pdb.cgi?pdbid=%s&chain=%s>%d</a></td>
-    <td style="word-wrap: break-word">
+    <td align=center><a href=pdb.cgi?pdbid=%s&chain=%s>%d</a></td>
+    <td style="word-wrap: break-word" align=center>
         <span title="%s"><a href="https://rcsb.org/structure/%s" target=_blank>%s</a>:%s<br>%s</span><br>
     </td>
     <td><span title=">sequence\n%s">%s</span></td>
     <td>%s</td>
-    <td>%s</td>
-    <td>%s</td>
-    <td>%s</td>
-    <td>%s</td>
+    <td align=center>%s</td>
+    <td align=center>%s</td>
+    <td align=center>%s</td>
+    <td align=center>%s</td>
+    <td align=center>%s</td>
     <td>%s</td>
 </tr>
 '''%(bgcolor,
@@ -499,6 +534,7 @@ for l in range(totalNum):
     rfam,
     taxon,
     pmid,
+    Motif_ID,
     ccd_http,
     )
 fp.close()
@@ -575,7 +611,7 @@ navigator+='''</select>
 print(navigator)
 print('''  
 <table border="0" width=100%>    
-<tr BGCOLOR="#FF9900" align=left>
+<tr BGCOLOR="#FF9900" align=center>
     <th><strong> # </strong></th>
     <th><strong> PDB<br>(Resolution)</strong></th>
     <th><strong> Length</strong></th>
@@ -584,7 +620,8 @@ print('''
     <th><strong> Rfam </strong> </th>           
     <th><strong> Taxon </strong> </th>           
     <th><strong> PubMed </strong> </th>           
-    <th><strong> Ligand &amp; binding nucleotides</strong> </th>           
+    <th><strong> Protein<br>binding<br>motif </strong> </th>           
+    <th><strong> Ligand &amp;<br>binding nucleotides</strong> </th>           
 </tr><tr>
 ''')
 print(html_txt)
