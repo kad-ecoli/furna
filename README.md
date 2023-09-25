@@ -22,7 +22,18 @@ cd ..
 rm -rf graphviz-6.0.2.tar.gz graphviz-6.0.2
 ```
 
-### 1. Download raw data ###
+### 1. Get cisbp-RNA download link ###
+Go to [http://cisbp-rna.ccbr.utoronto.ca/bulk.php](http://cisbp-rna.ccbr.utoronto.ca/bulk.php),
+click "Download Entire Datasets Archive", which will open
+[http://cisbp-rna.ccbr.utoronto.ca/bulk_archive.php](http://cisbp-rna.ccbr.utoronto.ca/bulk_archive.php). Right click on "Download" and Copy link address.
+Paste the url link to 
+```perl
+my $url="http://cisbp-rna.ccbr.utoronto.ca/tmp/entiredata_2023_09_25_9:33_am.zip";
+```
+at the top of ``script/download_cisbp.pl``.
+![images/cisbp-rna.png](images/cisbp-rna.png)
+
+### 2. Download raw data ###
 ```bash
 script/download_pdb.pl
 script/download_rfam.pl
@@ -31,7 +42,7 @@ script/download_goa.pl
 script/download_sifts.pl
 ```
 
-### 2. Curate data ###
+### 3. Curate data ###
 ```bash
 script/curate_pdb.pl
 script/curate_rfam.pl
@@ -40,7 +51,7 @@ script/curate_goa.pl
 script/combine_chain.pl
 ```
 
-### 3. Download data for each rna entry ###
+### 4. Download data for each rna entry ###
 ```bash
 script/download_pubmed.pl
 script/download_assembly.pl

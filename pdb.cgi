@@ -1323,7 +1323,7 @@ def read_uniprot():
 
 def read_fimo():
     fimo_dict=dict()
-    fp=gzip.open(rootdir+"/data/fimo.tsv.gz",'rt')
+    fp=gzip.open(rootdir+"/data/attract_fimo.tsv.gz",'rt')
     for line in fp.read().splitlines():
         items=line.split('\t')
         key=':'.join(items[:2])

@@ -43,6 +43,7 @@ if got:
     if got.startswith("GO:"):
         got=got[3:]
 ligname=form.getfirst("ligname",'').upper().strip().strip('"').replace("'",'')
+rnaname=form.getfirst("rnaname",'').upper().strip().strip('"').replace("'",'')
 pubmed =form.getfirst("pubmed",'').strip("'")
 outfmt =form.getfirst("outfmt",'').strip().strip("'")
 
@@ -69,6 +70,8 @@ if lig3:
     para_list.append("lig3=%s"%lig3)
 elif ligname:
     para_list.append('ligname=%s'%ligname)
+elif rnaname:
+    para_list.append('rnaname=%s'%rnaname)
 para='&'.join(para_list)
 
 #### read database data ####
@@ -224,6 +227,8 @@ for line in fp.read().splitlines()[1:]:
     cssr      =items[13]
     dssr      =items[14]
     title     =items[15]
+    if len(items)>16:
+        title+=';\n'+items[16]
 
     if pdbid and pdb!=pdbid:
         continue
@@ -232,6 +237,8 @@ for line in fp.read().splitlines()[1:]:
         if rnacentral in rnacentral_dict:
             chain2accession[pdb+':'+recCha]=rnacentral_dict[rnacentral].splitlines()[0][1:]
     if chain and recCha!=chain and not pdbid+':'+recCha in hasChain_dict:
+        continue
+    if rnaname and not rnaname in title.upper():
         continue
 
     if got:
@@ -522,7 +529,8 @@ Sort results by
 <input type=hidden name=pubmed  value='%s'>
 <input type=hidden name=lig3    value='%s'>
 <input type=hidden name=ligname value='%s'>
-</form>'''%(pdbid,chain,rcl,rfm,txn,ecn,got,pubmed,lig3,ligname)
+<input type=hidden name=rnaname value='%s'>
+</form>'''%(pdbid,chain,rcl,rfm,txn,ecn,got,pubmed,lig3,ligname,rnaname)
 ).replace('value="%s"'%order,
           'value="%s" selected="selected"'%order))
 
@@ -558,7 +566,9 @@ navigator+='''</select>
 <input type=hidden name=pubmed  value='%s'>
 <input type=hidden name=lig3    value='%s'>
 <input type=hidden name=ligname value='%s'>
-</form></center><br>'''%(pdbid,chain,rcl,rfm,txn,ecn,got,pubmed,lig3,ligname)
+<input type=hidden name=rnaname value='%s'>
+</form></center><br>'''%(
+    pdbid,chain,rcl,rfm,txn,ecn,got,pubmed,lig3,ligname,rnaname)
 
 print(navigator)
 print('''  

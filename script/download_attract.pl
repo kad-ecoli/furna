@@ -10,6 +10,10 @@ system("mkdir -p $rootdir/attract/logo/");
 system("mkdir -p $rootdir/data/attract/");
 system("wget -q https://attract.cnic.es/attract/static/ATtRACT.zip -O $rootdir/attract/ATtRACT.zip");
 system("cd $rootdir/attract; unzip -f ATtRACT.zip");
+if (!-f "$rootdir/attract/pwm.txt")
+{
+    system("cd $rootdir/attract; unzip ATtRACT.zip");
+}
 foreach my $line(`grep '^>' $rootdir/attract/pwm.txt`)
 {
     if ($line=~/>(\S+)/)
@@ -210,9 +214,9 @@ foreach my $taxon(@taxon_list)
     $cmd="cat $rootdir/attract/fimo/$taxon/fimo.tsv |grep -vP '\\t\\d+\\t\\d+\\t-\\t' > $rootdir/attract/fimo/$taxon.tsv";
     print  "$cmd\n";
     system("$cmd");
-    if (-s "$rootdir/fimo/$taxon.tsv")
+    if (-s "$rootdir/attract/fimo/$taxon.tsv")
     {
-        system("rm -rf $rootdir/fimo/$taxon");
+        system("rm -rf $rootdir/attract/fimo/$taxon");
     }
 }
 
@@ -248,10 +252,10 @@ foreach my $taxon(@taxon_list)
         }
     }
 }
-open(FP,">$rootdir/data/fimo.tsv");
+open(FP,">$rootdir/data/attract_fimo.tsv");
 print FP $txt;
 close(FP);
-&gzipFile("$rootdir/data/fimo.tsv");
+&gzipFile("$rootdir/data/attract_fimo.tsv");
 
 exit();
 
