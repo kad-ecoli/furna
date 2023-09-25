@@ -883,7 +883,7 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,
     return
 
 def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
-    go_dict,rfam_dict,rnacentral_dict,fimo_dict):
+    go_dict,rfam_dict,rnacentral_dict,fimo_dict,pubmed_dict):
     pdbid     =rna_info_list[0]
     asym_id   =rna_info_list[1]
     L     =int(rna_info_list[2])
@@ -910,10 +910,37 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
         mf_parent=parent_dict[target][0]
         bp_parent=parent_dict[target][1]
         cc_parent=parent_dict[target][2]
+    
+    taxon_txt=''
+    for t,taxon in enumerate(taxon_list):
+        if t:
+            taxon_txt+="<br>"
+        if not taxon in taxon_dict:
+            taxon_dict[taxon]=''
+        taxon_txt+="<a href=https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s target=_blank>%s</a> <i>%s</i>"%(
+            taxon,taxon,taxon_dict[taxon])
+
+    rnacentral_table=''
+    bgcolor='bgcolor="#DEDEDE"'
+    if len(rc_list) and rc_list[0]:
+        if bgcolor:
+            bgcolor=''
+        else:
+            bgcolor='bgcolor="#DEDEDE"'
+        rnacentral_list=[]
+        for r in rc_list:
+            rnacentral_list.append("<a href=https://rnacentral.org/rna/%s target=_blank>%s</a>"%(r,r))
+            if r in rnacentral_dict:
+                rnacentral_list[-1]+=rnacentral_dict[r]
+        rnacentral_table+='<tr '+bgcolor+'''><td align=center><strong>RNAcentral</strong></td><td>%s</td></tr>'''%(''.join(rnacentral_list))
 
     rfam_table=''
     if len(rfam_list) and rfam_list[0]:
-        rfam_table+='<tr bgcolor="#DEDEDE"><td align=center><strong>Rfam<br>families</strong></td><td>'
+        if bgcolor:
+            bgcolor=''
+        else:
+            bgcolor='bgcolor="#DEDEDE"'
+        rfam_table+='<tr '+bgcolor+'><td align=center><strong>Rfam<br>families</strong></td><td>'
         for r,rfam in enumerate(rfam_list):
             if r:
                 rfam_table+="<br>"
@@ -924,7 +951,11 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
 
     go_table=''
     if mf_parent+bp_parent+cc_parent:
-        go_table+='''<tr><td align=center><strong>GO<br>terms</strong></td><td>
+        if bgcolor:
+            bgcolor=''
+        else:
+            bgcolor='bgcolor="#DEDEDE"'
+        go_table+="<tr "+bgcolor+'''><td align=center><strong>GO<br>terms</strong></td><td>
         <table><tr><td><table>'''
         for go in mf_list+bp_list+cc_list:
             go_table+="<tr><td><a href=https://www.ebi.ac.uk/QuickGO/term/%s target=_blank>%s</a>"%(go,go)
@@ -979,7 +1010,11 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
 
     ec_table=''
     if len(ec_list) and ec_list[0]:
-        ec_table+='<tr bgcolor="#DEDEDE"><td align=center><strong>EC<br>numbers</strong></td><td>'
+        if bgcolor:
+            bgcolor=''
+        else:
+            bgcolor='bgcolor="#DEDEDE"'
+        ec_table+='<tr '+bgcolor+'><td align=center><strong>EC<br>numbers</strong></td><td>'
         for e,ec in enumerate(ec_list):
             if e:
                 ec_table+="<br>"
@@ -1009,25 +1044,6 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
         seq_txt+='<span title="DSSR secondary structure assignment">'+dssr[i:(i+width)]+'</span><br>'
 
 
-    rnacentral_table=''
-    if len(rc_list) and rc_list[0]:
-        rnacentral_list=[]
-        for r in rc_list:
-            rnacentral_list.append("<a href=https://rnacentral.org/rna/%s target=_blank>%s</a>"%(r,r))
-            if r in rnacentral_dict:
-                rnacentral_list[-1]+=rnacentral_dict[r]
-        rnacentral_table+='''<tr><td align=center><strong>RNAcentral</strong></td><td>%s</td></tr>'''%(''.join(rnacentral_list))
-
-
-    taxon_txt=''
-    for t,taxon in enumerate(taxon_list):
-        if t:
-            taxon_txt+="<br>"
-        if not taxon in taxon_dict:
-            taxon_dict[taxon]=''
-        taxon_txt+="<a href=https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s target=_blank>%s</a> <i>%s</i>"%(
-            taxon,taxon,taxon_dict[taxon])
-
     if len(name):
         if name.startswith('(') and name.endswith(')'):
             name=name[1:-1]
@@ -1035,6 +1051,10 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
 
     fimo_table=''
     if target in fimo_dict:
+        if bgcolor:
+            bgcolor=''
+        else:
+            bgcolor='bgcolor="#DEDEDE"'
         
         cmd="zcat %s|grep -P '^ATOM  '|cut -c23-27|uniq"%chainfile
         p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
@@ -1042,7 +1062,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
         resi_list=stdout.decode().splitlines()
         #print(resi_list)
 
-        fimo_table='''<tr><td align=center><strong>ATtRACT<br>motif</strong>
+        fimo_table='<tr><td '+bgcolor+''' align=center><strong>Motif for<br>protein<br>binding</strong>
     </td><td><table width=100%>
     <tr align=center bgcolor="#DEDEDE">
         <th>Motif<br>ID</th>
@@ -1054,38 +1074,48 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
         motif_dict=dict()
         motif_list=[]
         for line in fimo_dict[target]:
-            resi1    =line[0]
-            resi2    =line[1]
-            qvalue   =line[2]
-            Motif_seq=line[3].replace('T','U').lower()
-            Motif_ID =line[4]
-            Gene_name=line[5]
-            Gene_id  =line[6]
-            #citation =line[7]
+            db       =line[0]
+            resi1    =line[1]
+            resi2    =line[2]
+            qvalue   =line[3]
+            Motif_seq=line[4].replace('T','U').lower()
+            Motif_ID =line[5]
+            Gene_name=line[6]
+            Gene_id  =line[7]
+            #citation =line[8]
             citation_list=[]
-            if not "not available" in line[7]:
-                for citation in line[7].split(';'):
+            if not "not available" in line[8]:
+                for citation in line[8].split(';'):
+                    if citation=="NULL":
+                        continue
                     citation_list.append('''<a href=https://pubmed.ncbi.nlm.nih.gov/$citation target=_blank>$citation</a>'''.replace("$citation",citation))
-                
-            pngfile="data/attract/logo"+Motif_ID.replace('.','_').replace("_pfm",".pfm")+".png"
-            if not Motif_ID in motif_dict:
-                motif_list.append((Motif_ID,Gene_name,Gene_id,
+                    if citation in pubmed_dict:
+                        citation_list[-1]='<span title="'+pubmed_dict[citation] \
+                            +'">'+citation_list[-1]+'</span>'
+            pngfile="data/"+db+"/logo"+Motif_ID.replace('.','_').replace("_pfm",".pfm")+".png"
+            if not db+'\t'+Motif_ID in motif_dict:
+                motif_list.append((db,Motif_ID,Gene_name,Gene_id,
                     pngfile,'<br>'.join(citation_list)))
-                motif_dict[Motif_ID]=[]
+                motif_dict[db+'\t'+Motif_ID]=[]
 
             if len(resi_list) and int(resi1)<=len(resi_list
                             ) and int(resi2)<=len(resi_list):
                 resi1=resi_list[int(resi1)-1].strip()
                 resi2=resi_list[int(resi2)-1].strip()
-            motif_dict[Motif_ID].append("%s (%s ~ %s) qvalue=%s"%(
+            motif_dict[db+'\t'+Motif_ID].append("%s (%s ~ %s) qvalue=%s"%(
                 Motif_seq,resi1,resi2,qvalue))
 
         for l,items in enumerate(motif_list):
             bgcolor=''
             if l % 2==1:
                 bgcolor='bgcolor="#DEDEDE"'
-            Motif_ID,Gene_name,Gene_id,pngfile,citation=items
-            Motif_match='<br>'.join(motif_dict[Motif_ID])
+            db,Motif_ID,Gene_name,Gene_id,pngfile,citation=items
+            Motif_match=''.join(['<li>'+m+'</li>' for m in motif_dict[db+'\t'+Motif_ID]])
+
+            if db=="attract":
+                Motif_ID="ATtRACT:"+Motif_ID
+            elif db=="cisbp":
+                Motif_ID="CISBP-RNA:"+Motif_ID
                 
             fimo_table+='''
     <tr align=center $bgcolor>
@@ -1329,7 +1359,15 @@ def read_fimo():
         key=':'.join(items[:2])
         if not key in fimo_dict:
             fimo_dict[key]=[]
-        fimo_dict[key].append(items[2:])
+        fimo_dict[key].append(["attract"]+items[2:])
+    fp.close()
+    fp=gzip.open(rootdir+"/data/cisbp_fimo.tsv.gz",'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        key=':'.join(items[:2])
+        if not key in fimo_dict:
+            fimo_dict[key]=[]
+        fimo_dict[key].append(["cisbp"]+items[2:])
     fp.close()
     return fimo_dict
 
@@ -1825,22 +1863,6 @@ Unknown pdb chain %s:%s
     uniprot_dict=read_uniprot()
     fimo_dict=read_fimo()
 
-    display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
-        go_dict,rfam_dict,rnacentral_dict,fimo_dict)
-    extract_assembly(pdbid,asym_id)
-    if lig3 and ligCha and ligIdx:
-        ligand_info_list=get_ligand_info(pdbid,asym_id,lig3,ligCha,ligIdx)
-        if ligand_info_list:
-            extract_ligand(pdbid,asym_id,lig3,ligCha,ligIdx)
-            if not lig3 in ["protein","dna","rna"]:
-                display_regular_ligand(ligand_info_list,ligand_dict)
-            else:
-                display_polymer_ligand(ligand_info_list,taxon_dict,
-                    parent_dict,ec_dict,go_dict,rfam_dict,rna_info_list,
-                    rnacentral_dict,uniprot_dict)
-    else:
-        display_interaction_list(pdbid,asym_id,ligand_dict)
-   
     pubmed=''
     if len(rna_info_list[6]):
         pubmed_dict=dict()
@@ -1857,8 +1879,23 @@ Unknown pdb chain %s:%s
             pubmed_list.append("<li>"+pubmed+"</li>")
         pubmed='''<tr bgcolor="#DEDEDE">'''
         pubmed+='''<td align=center><strong>PubMed</strong></td><td>%s</td></tr>'''%(''.join(pubmed_list))
-            
-            
+
+    display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
+        go_dict,rfam_dict,rnacentral_dict,fimo_dict,pubmed_dict)
+    extract_assembly(pdbid,asym_id)
+    if lig3 and ligCha and ligIdx:
+        ligand_info_list=get_ligand_info(pdbid,asym_id,lig3,ligCha,ligIdx)
+        if ligand_info_list:
+            extract_ligand(pdbid,asym_id,lig3,ligCha,ligIdx)
+            if not lig3 in ["protein","dna","rna"]:
+                display_regular_ligand(ligand_info_list,ligand_dict)
+            else:
+                display_polymer_ligand(ligand_info_list,taxon_dict,
+                    parent_dict,ec_dict,go_dict,rfam_dict,rna_info_list,
+                    rnacentral_dict,uniprot_dict)
+    else:
+        display_interaction_list(pdbid,asym_id,ligand_dict)
+   
     print('''
 <tr><td>
 <div id="headerDiv">
