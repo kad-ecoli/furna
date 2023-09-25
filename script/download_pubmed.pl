@@ -29,6 +29,7 @@ if (-s "$rootdir/data/rna.tsv.gz")
     $cmd="z$cmd";
 }
 my $txt;
+my %pubmed_dict;
 foreach my $pmid(`$cmd`)
 {
     chomp($pmid);
@@ -40,8 +41,25 @@ foreach my $pmid(`$cmd`)
     {
         my $title=`head -1 $pubmeddir/$pmid.txt`;
         $txt.="$pmid\t$title";
+        $pubmed_dict{$pmid}="$title";
     }
 }
+foreach my $pmid(`zcat $rootdir/data/attract_fimo.tsv.gz $rootdir/data/cisbp_fimo.tsv.gz|cut -f10|sed 's/;/\\n/g'|grep -v NULL|grep -v available|sort|uniq`)
+{
+    chomp($pmid);
+    next if (exists($pubmed_dict{$pmid}));
+    if (!-s "$pubmeddir/$pmid.txt")
+    {
+        &download_pubmed($pmid,$pubmeddir);
+    }
+    if (-s "$pubmeddir/$pmid.txt")
+    {
+        my $title=`head -1 $pubmeddir/$pmid.txt`;
+        $txt.="$pmid\t$title";
+        $pubmed_dict{$pmid}="$title";
+    }
+}
+
 open(FP,">$rootdir/data/pubmed.tsv");
 print FP "$txt";
 close(FP);
