@@ -131,8 +131,21 @@ int main(int argc,char **argv)
     }
     result+=buf.str();
 
-    ofstream fout;
-    fout.open(out_file.c_str(),ios::out);
-    fout<<result<<flush;
-    fout.close();
+    if (out_file=="-")
+        cout<<result<<flush;
+    else
+    {
+        ofstream fout;
+        fout.open(out_file.c_str(),ios::out);
+        fout<<result<<flush;
+        fout.close();
+    }
+
+    /* clean up */
+    result.clear();
+    buf.str(string());
+    name.clear();
+    vector<string>().swap(line_vec);
+    vector<double>().swap(row);
+    return 0;
 }
