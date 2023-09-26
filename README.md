@@ -66,4 +66,5 @@ script/combine_dna.pl
 script/curate_blastdb.pl
 script/download_uniprot.pl
 script/download_attract.pl
+script/download_cisbp.pl
 ```

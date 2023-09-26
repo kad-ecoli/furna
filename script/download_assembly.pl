@@ -56,5 +56,5 @@ sub download_assembly
 {
     my ($url_query,$outfile)=@_;
     system("wget -q http://files.wwpdb.org/pub/pdb/$url_query -O $outfile");
-    system("wget -q  ftp://files.wwpdb.org/pub/pdb/$url_query -O $outfile") if (!-s "$rootdir/$outfile");
+    system("wget -q https://files.rcsb.org/pub/pdb/$url_query -O $outfile") if (!-s "$rootdir/$outfile");
 }
