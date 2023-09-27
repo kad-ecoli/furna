@@ -1576,6 +1576,7 @@ def display_asymetric_unit(pdbid):
     go_dict=read_go()
     ec_dict=read_ec()
     rfam_dict=read_rfam()
+    rnacentral_dict=read_rnacentral()
     ligand_dict=read_ligand()
 
     ligand_info_dict=dict()
@@ -1687,7 +1688,9 @@ def display_asymetric_unit(pdbid):
         rfam_table='<br>'.join(rfam_list)
 
         for r,rnacentral in enumerate(rc_list):
-            rc_list[r]="<a href=https://rnacentral.org/rna/%s target=_blank>%s</a> "%(rnacentral,rnacentral.split('_')[0])
+            rc_list[r]="<a href=https://rnacentral.org/rna/%s target=_blank>%s</a>"%(rnacentral,rnacentral.split('_')[0])
+            if rnacentral in rnacentral_dict:
+                rc_list[r]+=' '+rnacentral_dict[rnacentral]
         rnacentral_table='<br>'.join(rc_list)
 
         go_list=mf_list+bp_list+cc_list
@@ -1705,8 +1708,8 @@ def display_asymetric_unit(pdbid):
         for t,taxon in enumerate(taxon_list):
             if not taxon in taxon_dict:
                 taxon_dict[taxon]=''
-            taxon_list[t]="<i>%s</i> (<a href=https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s target=_blank>%s</a>)"%(
-                    taxon_dict[taxon],taxon,taxon)
+            taxon_list[t]="<a href=https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s target=_blank>%s</a> <i>%s</i>"%(
+                taxon,taxon,taxon_dict[taxon])
         taxon_table='<br>'.join(taxon_list)
 
         seq_list=[]
@@ -1768,12 +1771,13 @@ def display_asymetric_unit(pdbid):
 <div id="contentDiv">
     <div id="RContent" style="display: block;">
     <table width=100% border="0" style="font-family:Monospace;font-size:14px;background:#F2F2F2;" >
-    <tr><td align=center width=10%><strong>PDB</strong></td>
+    <tr><td align=center width=10%><strong>Structure<br>database</strong></td>
         <td width=90%>
             <a href=https://rcsb.org/structure/$pdbid target=_blank>RCSB</a>,
             <a href=https://ebi.ac.uk/pdbe/entry/pdb/$pdbid target=_blank>PDBe</a>,
             <a href=https://pdbj.org/mine/summary/$pdbid target=_blank>PDBj</a>,
-            <a href=http://ebi.ac.uk/pdbsum/$pdbid target=_blank>PDBsum</a>,
+            <a href=https://ebi.ac.uk/pdbsum/$pdbid target=_blank>PDBsum</a>,
+            <br>
             <a href=https://nakb.org/atlas=$pdbid target=_blank>NAKB</a>,
             <a href=https://dnatco.datmos.org/conformers_cif.php?cifcode=$pdbid target=_blank>DNATCO</a>,
             <a href=http://rna.bgsu.edu/rna3dhub/pdb/$pdbid target=_blank>BGSU RNA</a>
@@ -1907,12 +1911,13 @@ Unknown pdb chain %s:%s
 <div id="contentDiv">
     <div id="RContent" style="display: block;">
     <table width=100% border="0" style="font-family:Monospace;font-size:14px;background:#F2F2F2;" >
-    <tr><td align=center width=10%><strong>PDB</strong></td>
+    <tr><td align=center width=10%><strong>Structure<br>database</strong></td>
         <td width=90%>
             <a href=https://rcsb.org/structure/$pdbid target=_blank>RCSB</a>,
             <a href=https://ebi.ac.uk/pdbe/entry/pdb/$pdbid target=_blank>PDBe</a>,
             <a href=https://pdbj.org/mine/summary/$pdbid target=_blank>PDBj</a>,
             <a href=http://ebi.ac.uk/pdbsum/$pdbid target=_blank>PDBsum</a>,
+            <br>
             <a href=https://nakb.org/atlas=$pdbid target=_blank>NAKB</a>,
             <a href=https://dnatco.datmos.org/conformers_cif.php?cifcode=$pdbid target=_blank>DNATCO</a>,
             <a href=http://rna.bgsu.edu/rna3dhub/pdb/$pdbid target=_blank>BGSU RNA</a>
