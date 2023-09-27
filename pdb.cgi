@@ -1353,22 +1353,24 @@ def read_uniprot():
 
 def read_fimo():
     fimo_dict=dict()
-    fp=gzip.open(rootdir+"/data/attract_fimo.tsv.gz",'rt')
-    for line in fp.read().splitlines():
-        items=line.split('\t')
-        key=':'.join(items[:2])
-        if not key in fimo_dict:
-            fimo_dict[key]=[]
-        fimo_dict[key].append(["attract"]+items[2:])
-    fp.close()
-    fp=gzip.open(rootdir+"/data/cisbp_fimo.tsv.gz",'rt')
-    for line in fp.read().splitlines():
-        items=line.split('\t')
-        key=':'.join(items[:2])
-        if not key in fimo_dict:
-            fimo_dict[key]=[]
-        fimo_dict[key].append(["cisbp"]+items[2:])
-    fp.close()
+    if os.path.isfile(rootdir+"/data/attract_fimo.tsv.gz"):
+        fp=gzip.open(rootdir+"/data/attract_fimo.tsv.gz",'rt')
+        for line in fp.read().splitlines():
+            items=line.split('\t')
+            key=':'.join(items[:2])
+            if not key in fimo_dict:
+                fimo_dict[key]=[]
+            fimo_dict[key].append(["attract"]+items[2:])
+        fp.close()
+    if os.path.isfile(rootdir+"/data/cisbp_fimo.tsv.gz"):
+        fp=gzip.open(rootdir+"/data/cisbp_fimo.tsv.gz",'rt')
+        for line in fp.read().splitlines():
+            items=line.split('\t')
+            key=':'.join(items[:2])
+            if not key in fimo_dict:
+                fimo_dict[key]=[]
+            fimo_dict[key].append(["cisbp"]+items[2:])
+        fp.close()
     return fimo_dict
 
 def extract_ligand(pdbid,asym_id,lig3,ligCha,ligIdx):
