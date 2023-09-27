@@ -13,6 +13,8 @@ rootdir=os.path.dirname(os.path.abspath(__file__))
 outdir =os.path.join(rootdir,"output")
 
 def get_svg_ratio(svgfile):
+    if not os.path.isfile(svgfile):
+        return 0
     fp=open(svgfile)
     for line in fp:
         if line.startswith('<svg width='):
