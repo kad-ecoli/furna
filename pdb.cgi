@@ -984,7 +984,8 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
             width_list.append(get_svg_ratio(cc_svg))
         if len(width_list)>=2:
             sumwidth=sum(width_list)
-            width_list=[int(100.*w/sumwidth) for w in width_list]
+            if sumwidth>0:
+                width_list=[int(100.*w/sumwidth) for w in width_list]
         else:
             width_list=[]
             
