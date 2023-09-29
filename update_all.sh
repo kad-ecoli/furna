@@ -22,8 +22,8 @@ script/combine_protein.pl
 script/download_taxon.pl
 script/fasta2taxon.pl
 script/plot_goa.pl
-script/make_summary.pl
 script/combine_dna.pl
 script/curate_blastdb.pl
 script/download_uniprot.pl
 script/download_attract.pl
+script/make_summary.pl

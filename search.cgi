@@ -38,6 +38,7 @@ rfm  =form.getfirst("rfm",'').upper().strip().strip("'")
 ecn  =form.getfirst("ecn",'').strip().strip("'")
 got  =form.getfirst("got",'').upper().strip().strip("'")
 txn  =form.getfirst("txn",'').strip()
+mot  =form.getfirst("mot",'').strip().lower()
 if got:
     got=got.split()[0]
     if got.startswith("GO:"):
@@ -60,6 +61,8 @@ if rfm:
     para_list.append("rfm=%s"%rfm)
 if txn:
     para_list.append("txn=%s"%txn)
+if mot:
+    para_list.append("mot=%s"%mot)
 if ecn:
     para_list.append("ecn=%s"%ecn)
 if got:
@@ -120,6 +123,7 @@ if got and got!='0':
     fp.close()
 
 fimo_dict=dict()
+attract_dict=dict()
 if os.path.isfile(rootdir+"/data/attract_fimo.tsv.gz"):
     fp=gzip.open(rootdir+"/data/attract_fimo.tsv.gz",'rt')
     for line in fp.read().splitlines():
@@ -256,10 +260,16 @@ for line in fp.read().splitlines()[1:]:
         chain2accession[pdb+':'+recCha]=rnacentral
         if rnacentral in rnacentral_dict:
             chain2accession[pdb+':'+recCha]=rnacentral_dict[rnacentral].splitlines()[0][1:]
-    if chain and recCha!=chain and not pdb+':'+recCha in hasChain_dict:
+    key=pdb+':'+recCha
+    if chain and recCha!=chain and not key in hasChain_dict:
         continue
     if rnaname and not rnaname in title.upper():
         continue
+    if mot:
+        if not key in fimo_dict:
+            continue
+        elif mot!="attract" and not mot in ('\t'.join(fimo_dict[key])).lower():
+            continue
 
     if got:
         if got=='0' and not go_mf+go_bp+go_cc:
@@ -498,6 +508,8 @@ for l in range(totalNum):
     if key in fimo_dict:
         motif_list=[]
         for Motif_ID in list(set(fimo_dict[key])):
+            if mot and mot!="attract" and not mot in Motif_ID.lower():
+                continue
             pngfile="data/attract/logo"+Motif_ID.replace('.','_')+".png"
             motif_list.append('<a href=%s><img src=%s width=70></a><br>%s'%(pngfile,pngfile,Motif_ID))
         Motif_ID='<br>'.join(motif_list)
@@ -557,13 +569,14 @@ Sort results by
 <input type=hidden name=rcl     value='%s'>
 <input type=hidden name=rfm     value='%s'>
 <input type=hidden name=txn     value='%s'>
+<input type=hidden name=mot     value='%s'>
 <input type=hidden name=ecn     value='%s'>
 <input type=hidden name=got     value='%s'>
 <input type=hidden name=pubmed  value='%s'>
 <input type=hidden name=lig3    value='%s'>
 <input type=hidden name=ligname value='%s'>
 <input type=hidden name=rnaname value='%s'>
-</form>'''%(pdbid,chain,rcl,rfm,txn,ecn,got,pubmed,lig3,ligname,rnaname)
+</form>'''%(pdbid,chain,rcl,rfm,txn,mot,ecn,got,pubmed,lig3,ligname,rnaname)
 ).replace('value="%s"'%order,
           'value="%s" selected="selected"'%order))
 
@@ -594,6 +607,7 @@ navigator+='''</select>
 <input type=hidden name=rcl     value='%s'>
 <input type=hidden name=rfm     value='%s'>
 <input type=hidden name=txn     value='%s'>
+<input type=hidden name=mot     value='%s'>
 <input type=hidden name=ecn     value='%s'>
 <input type=hidden name=got     value='%s'>
 <input type=hidden name=pubmed  value='%s'>
@@ -601,7 +615,7 @@ navigator+='''</select>
 <input type=hidden name=ligname value='%s'>
 <input type=hidden name=rnaname value='%s'>
 </form></center><br>'''%(
-    pdbid,chain,rcl,rfm,txn,ecn,got,pubmed,lig3,ligname,rnaname)
+    pdbid,chain,rcl,rfm,txn,mot,ecn,got,pubmed,lig3,ligname,rnaname)
 
 print(navigator)
 print('''  

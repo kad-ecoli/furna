@@ -225,14 +225,15 @@
     </li>
     <li><a href="search.cgi">BROWSE</a>
         <ul>
-        <li><a href="search.cgi">Browse all entries</a></li>
-        <!--<li><a href="search.cgi?ecn=0">Browse RNAs with EC numbers</a></li>-->
-        <li><a href="search.cgi?got=0">Browse RNAs with GO terms</a></li>
-        <li><a href="search.cgi?lig3=regular">Browse regular ligand-RNA interactions</a></li>
-        <li><a href="search.cgi?lig3=metal">Browse metal ion-RNA interactions</a></li>
-        <li><a href="search.cgi?lig3=protein">Browse protein-RNA interactions</a></li>
-        <li><a href="search.cgi?lig3=rna">Browse RNA-RNA interactions</a></li>
-        <li><a href="search.cgi?lig3=dna">Browse DNA-RNA interactions</a></li>
+        <li><a href="search.cgi">All entries</a></li>
+	<li><a href="search.cgi?ecn=0">RNAs with EC numbers</a></li>
+        <li><a href="search.cgi?got=0">RNAs with GO terms</a></li>
+        <li><a href="search.cgi?lig3=regular">Regular ligand-RNA interactions</a></li>
+        <li><a href="search.cgi?lig3=metal">Metal ion-RNA interactions</a></li>
+        <li><a href="search.cgi?lig3=protein">Protein-RNA interactions</a></li>
+        <li><a href="search.cgi?lig3=rna">RNA-RNA interactions</a></li>
+        <li><a href="search.cgi?lig3=dna">DNA-RNA interactions</a></li>
+        <li><a href="search.cgi?mot=attract">RNAs with ATtRACT motif</a></li>
         </ul>
     </li>
     <li><a href="ligand.cgi">LIGAND</a></li>
@@ -345,10 +346,10 @@ function example_pdbfile()
         <td><span title="To search proteins with GO terms in the Molecular Function, Biological Process and Cellular Component aspects, use terms GO:0003674, GO:0008150 and GO:0005575, respectively.">GO term</span></td>
         <td><span title="To search proteins with GO terms in the Molecular Function, Biological Process and Cellular Component aspects, use terms GO:0003674, GO:0008150 and GO:0005575, respectively."><input type="text" name="got" value="" class="form-left" placeholder="Example: GO:0003720, or just 0003720" size=60></span></td>
     </tr>
-    <!--<tr>-->
-        <!--<td>Ligand name </td>-->
-        <!--<td><input type="text" name="ligname" value="" class="form-left" placeholder="Example: GTP" size=60></td>-->
-    <!--</tr>-->
+    <tr>
+	<td>ATtRACT motif</td>
+	<td><input type="text" name="mot" value="" class="form-left" placeholder="Example: M065_0.6" size=60></td>
+    </tr>
     <tr>
         <td>PubMed ID </td>
         <td><input type="text" name="pubmed" value="" class="form-left" placeholder="Example: 9653038" size=60></td>

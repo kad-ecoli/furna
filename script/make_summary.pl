@@ -13,6 +13,7 @@ my $mf =`zcat $rootdir/data/rna.tsv.gz |cut -f9 |grep -F GO:|wc -l`+0;
 my $bp =`zcat $rootdir/data/rna.tsv.gz |cut -f10|grep -F GO:|wc -l`+0;
 my $cc =`zcat $rootdir/data/rna.tsv.gz |cut -f11|grep -F GO:|wc -l`+0;
 my $got=`zcat $rootdir/data/rna.tsv.gz |cut -f9-11|grep -F GO:|wc -l`+0;
+my $attract=`zcat $rootdir/data/attract_fimo.tsv.gz |cut -f1,2|sort|uniq|wc -l`+0;
 
 my %metal_dict;
 foreach my $line(`zcat $rootdir/data/metal.tsv.gz|cut -f1`)
@@ -74,6 +75,7 @@ The database is updated weekly and the current version ($date) contains:
 (<a href=search.cgi?&got=0003674>$mf</a> with Molecular Function, 
  <a href=search.cgi?&got=0008150>$bp</a> with Biological Process, and 
  <a href=search.cgi?&got=0005575>$cc</a> with Cellular Component)</li>
+<li>Number of RNAs with protein binding motifs: <a href=search.cgi?mot=attract>$attract</a></li>
 EOF
 ;
 
