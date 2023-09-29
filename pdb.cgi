@@ -1065,10 +1065,10 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
         resi_list=stdout.decode().splitlines()
         #print(resi_list)
 
-        fimo_table='<tr><td '+bgcolor+''' align=center><strong>Motif for<br>protein<br>binding</strong>
+        fimo_table='<tr><td '+bgcolor+''' align=center><strong>Protein<br>binding<br>motif</strong>
     </td><td><table width=100%>
     <tr align=center bgcolor="#DEDEDE">
-        <th>Motif<br>ID</th>
+        <th>ATtRACT<br>motif ID</th>
         <th>Logo</th>
         <th>Matched sequence<br>(residue number) qvalue</th>
         <th>Binding<br>protein</th>
@@ -1115,11 +1115,6 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
             db,Motif_ID,Gene_name,Gene_id,pngfile,citation=items
             Motif_match=''.join(['<li>'+m+'</li>' for m in motif_dict[db+'\t'+Motif_ID]])
 
-            if db=="attract":
-                Motif_ID="ATtRACT:"+Motif_ID
-            elif db=="cisbp":
-                Motif_ID="CISBP-RNA:"+Motif_ID
-                
             fimo_table+='''
     <tr align=center $bgcolor>
         <td>$Motif_ID</td>
@@ -1365,15 +1360,15 @@ def read_fimo():
                 fimo_dict[key]=[]
             fimo_dict[key].append(["attract"]+items[2:])
         fp.close()
-    if os.path.isfile(rootdir+"/data/cisbp_fimo.tsv.gz"):
-        fp=gzip.open(rootdir+"/data/cisbp_fimo.tsv.gz",'rt')
-        for line in fp.read().splitlines():
-            items=line.split('\t')
-            key=':'.join(items[:2])
-            if not key in fimo_dict:
-                fimo_dict[key]=[]
-            fimo_dict[key].append(["cisbp"]+items[2:])
-        fp.close()
+    #if os.path.isfile(rootdir+"/data/cisbp_fimo.tsv.gz"):
+        #fp=gzip.open(rootdir+"/data/cisbp_fimo.tsv.gz",'rt')
+        #for line in fp.read().splitlines():
+            #items=line.split('\t')
+            #key=':'.join(items[:2])
+            #if not key in fimo_dict:
+                #fimo_dict[key]=[]
+            #fimo_dict[key].append(["cisbp"]+items[2:])
+        #fp.close()
     return fimo_dict
 
 def extract_ligand(pdbid,asym_id,lig3,ligCha,ligIdx):

@@ -127,17 +127,17 @@ if os.path.isfile(rootdir+"/data/attract_fimo.tsv.gz"):
         key=':'.join(items[:2])
         if not key in fimo_dict:
             fimo_dict[key]=[]
-        fimo_dict[key].append("attract\t"+items[6])
+        fimo_dict[key].append(items[6])
     fp.close()
-if os.path.isfile(rootdir+"/data/cisbp_fimo.tsv.gz"):
-    fp=gzip.open(rootdir+"/data/cisbp_fimo.tsv.gz",'rt')
-    for line in fp.read().splitlines():
-        items=line.split('\t')
-        key=':'.join(items[:2])
-        if not key in fimo_dict:
-            fimo_dict[key]=[]
-        fimo_dict[key].append("cisbp\t"+items[6])
-    fp.close()
+#if os.path.isfile(rootdir+"/data/cisbp_fimo.tsv.gz"):
+    #fp=gzip.open(rootdir+"/data/cisbp_fimo.tsv.gz",'rt')
+    #for line in fp.read().splitlines():
+        #items=line.split('\t')
+        #key=':'.join(items[:2])
+        #if not key in fimo_dict:
+            #fimo_dict[key]=[]
+        #fimo_dict[key].append("cisbp\t"+items[6])
+    #fp.close()
 
 ligand_dict=dict()
 fp=gzip.open(rootdir+"/data/ligand.tsv.gz",'rt')
@@ -498,15 +498,8 @@ for l in range(totalNum):
     if key in fimo_dict:
         motif_list=[]
         for Motif_ID in list(set(fimo_dict[key])):
-            db,Motif_ID=Motif_ID.split('\t')
-            if db=="attract":
-                pngfile="data/attract/logo"+Motif_ID.replace('.','_')+".png"
-                motif_list.append('<span title="ATtRACT:%s"><a href=%s><img src=%s width=70></a><br>%s</span>'%(Motif_ID,pngfile,pngfile,Motif_ID))
-            elif db=="cisbp":
-                pngfile="data/cisbp/logo"+Motif_ID.replace('.','_')+".png"
-                motif_list.append('<span title="CISBP-RNA:%s"><a href=%s><img src=%s width=70></a><br>%s</span>'%(Motif_ID,pngfile,pngfile,Motif_ID))
-            else:
-                motif_list.append(Motif_ID)
+            pngfile="data/attract/logo"+Motif_ID.replace('.','_')+".png"
+            motif_list.append('<a href=%s><img src=%s width=70></a><br>%s'%(pngfile,pngfile,Motif_ID))
         Motif_ID='<br>'.join(motif_list)
     
     bgcolor=''
@@ -622,7 +615,7 @@ print('''
     <th><strong> Rfam </strong> </th>           
     <th><strong> Taxon </strong> </th>           
     <th><strong> PubMed </strong> </th>           
-    <th><strong> Protein<br>binding<br>motif </strong> </th>           
+    <th><strong> ATtRACT<br>motif </strong> </th>           
     <th><strong> Ligand &amp;<br>binding nucleotides</strong> </th>           
 </tr><tr>
 ''')
