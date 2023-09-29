@@ -229,6 +229,8 @@ fp.close()
 
 #### parse page ####
 pageLimit=100
+if mot:
+    pageLimit=30
 html_txt=''
 sort_line=[]
 fp=gzip.open(rootdir+"/data/rna.tsv.gz",'rt')
@@ -508,8 +510,8 @@ for l in range(totalNum):
     if key in fimo_dict:
         motif_list=[]
         for Motif_ID in list(set(fimo_dict[key])):
-            if mot and mot!="attract" and not mot in Motif_ID.lower():
-                continue
+            #if mot and mot!="attract" and not mot in Motif_ID.lower():
+                #continue
             pngfile="data/attract/logo"+Motif_ID.replace('.','_')+".png"
             motif_list.append('<a href=%s><img src=%s width=70></a><br>%s'%(pngfile,pngfile,Motif_ID))
         Motif_ID='<br>'.join(motif_list)
