@@ -10,8 +10,5 @@
 
 # Second, set the context, which may not be necessary on some system:
 
-    chcon -t httpd_sys_script_exec_t index.cgi
-    chcon -t httpd_sys_script_exec_t ligand.cgi
-    chcon -t httpd_sys_script_exec_t pdb.cgi
-    chcon -t httpd_sys_script_exec_t search.cgi
+    chcon -t httpd_sys_script_exec_t *.cgi
     chcon -t httpd_sys_rw_content_t  output/
