@@ -5,7 +5,7 @@ use Cwd 'abs_path';
 my $bindir = dirname(abs_path(__FILE__));
 my $rootdir = dirname($bindir);
 
-my $date=`date +%Y-%M-%d`;
+my $date=`date +%Y-%m-%d`;
 chomp($date);
 my $RNAs=`zcat $rootdir/data/rna.tsv.gz |cut -f1,2|grep -v '^#'|wc -l`+0;
 my $ecn=`zcat $rootdir/data/rna.tsv.gz |cut -f8 |grep -F EC:|wc -l`+0;
