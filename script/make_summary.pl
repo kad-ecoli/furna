@@ -85,4 +85,13 @@ open(FP,">$rootdir/data/index.txt");
 print FP $index_txt;
 close(FP);
 
+#my $cmd="cd $rootdir; tar -cJf $rootdir/download/chain.tar.xz chain/";
+my $cmd="cd $rootdir; tar -cf $rootdir/download/chain.tar chain/";
+print  "$cmd\n";
+system("$cmd");
+#$cmd="cd $rootdir; tar -cJf $rootdir/download/ligand.tar.xz interim/*/*.tar.gz";
+$cmd="cd $rootdir; tar -cf $rootdir/download/ligand.tar interim/*/*.tar.gz";
+print  "$cmd\n";
+system("$cmd");
+
 exit();
