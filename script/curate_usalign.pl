@@ -56,8 +56,15 @@ open(FP,">$rootdir/data/USalign/list.fasta");
 print FP $txt;
 close(FP);
 
-system("$bindir/cd-hit-est -i $rootdir/data/USalign/list.fasta -o $rootdir/data/USalign/c80.fasta -c 0.8 -s 0.5");
-system("$bindir/clstr2tsv.py $rootdir/data/USalign/c80.fasta.clstr $rootdir/data/USalign/c80.tsv");
+if (!-s "$rootdir/data/USalign/cluster.txt")
+{
+    system("$bindir/cd-hit-est -i $rootdir/data/USalign/list.fasta -o $rootdir/data/USalign/c80.fasta -c 0.8 -s 0.5");
+    system("$bindir/clstr2tsv.py $rootdir/data/USalign/c80.fasta.clstr $rootdir/data/USalign/c80.tsv");
+}
+else
+{
+    system("cp $rootdir/data/USalign/cluster.txt $rootdir/data/USalign/c80.tsv");
+}
 system("$bindir/qTMclust -fast -dir $rootdir/data/USalign/  $rootdir/data/USalign/list -o  $rootdir/data/USalign/cluster.txt -init $rootdir/data/USalign/c80.tsv");
 system("cut -f1 $rootdir/data/USalign/cluster.txt > $rootdir/data/USalign/cluster.list");
 

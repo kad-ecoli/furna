@@ -2676,7 +2676,7 @@ int cif2fasta(const string &infile, string &pdbid)
     {
         buf<<'>'<<pdbid<<':'<<chainID_vec[l]<<'\t';
         if (mol_type_mat[l][0]>=mol_type_mat[l][1] && 
-            mol_type_mat[l][1]>=mol_type_mat[l][2])
+            mol_type_mat[l][0]>=mol_type_mat[l][2])
         {
             sequence=sequence_vec[l];
             buf<<"PROTEIN\t"<<sequence.size()<<'\n'<<sequence<<'\n';
