@@ -46,7 +46,7 @@ table, th, td {
 <li>All small molecule ligands (regular ligands and metal ions) that interact with RNAs: <a href=data/ligand.tsv.gz download>ligand.tsv.gz</a></li>
 <li>Match to ATtRACT motifs for protein binding: <a href=data/attract_fimo.tsv.gz download>attract_fimo.tsv.gz</a></li>
 <li>Full GO terms for each RNA, including the parent terms: <a href=data/parent.tsv.gz download>parent.tsv.gz</a></li>
-<li>Documentation for the above tables: <a href=https://github.com/kad-ecoli/furna/wiki/download-readme.md target=_blank>readme.md</a></li>
+<li>Documentation for the above tables: <a href=download/readme.md target=_blank>readme.md</a></li>
 
 <p></p>
 
