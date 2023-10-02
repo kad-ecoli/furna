@@ -63,11 +63,11 @@ my $index_txt=<<EOF
 
 The database is updated weekly and the current version ($date) contains:
 <li>Number of ligand-RNA interactions: <a href=search.cgi>$interaction</a></li>
-<li>Number of entries for regular ligands: <a href=search.cgi?lig3=regular>$regular</a></li>
-<li>Number of entries for metal ligands: <a href=search.cgi?lig3=metal>$metal</a></li>
-<li>Number of entries for protein ligands: <a href=search.cgi?lig3=protein>$protein</a></li>
-<li>Number of entries for DNA ligands: <a href=search.cgi?lig3=dna>$dna</a></li>
-<li>Number of entries for RNA ligands: <a href=search.cgi?lig3=rna>$rna</a></li>
+<li>Number of regular ligand-RNA interactions: <a href=search.cgi?lig3=regular>$regular</a></li>
+<li>Number of metal-ion-RNA interactions: <a href=search.cgi?lig3=metal>$metal</a></li>
+<li>Number of protein-RNA interactions: <a href=search.cgi?lig3=protein>$protein</a></li>
+<li>Number of DNA-RNA interactions: <a href=search.cgi?lig3=dna>$dna</a></li>
+<li>Number of RNA-RNA interactions: <a href=search.cgi?lig3=rna>$rna</a></li>
 <li>Number of types of ligands: <a href=ligand.cgi>$ligand</a></li>
 
 <li>Number of RNAs: <a href=search.cgi>$RNAs</a></li>
@@ -76,7 +76,7 @@ The database is updated weekly and the current version ($date) contains:
 (<a href=search.cgi?&got=0003674>$mf</a> with Molecular Function, 
  <a href=search.cgi?&got=0008150>$bp</a> with Biological Process, and 
  <a href=search.cgi?&got=0005575>$cc</a> with Cellular Component)</li>
-<li>Number of RNAs with protein binding motifs: <a href=search.cgi?mot=attract>$attract</a></li>
+<li>Number of RNAs with ATtRACT motifs for protein binding: <a href=search.cgi?mot=attract>$attract</a></li>
 <li>Number of RNAs with Rfam families: <a href=search.cgi?rfm=RF>$rfam</a></li>
 EOF
 ;
