@@ -26,7 +26,7 @@ form = cgi.FieldStorage()
 mode = 1
 structure=form.getfirst("structure",'').strip()
 if not structure:
-    structure=form.getfirst("struct_file",'').strip()
+    structure=form.getfirst("struct_file",'').decode().strip()
 if not structure:
     ExitWithError("empty input")
 if len(structure) and not "ATOM " in structure:
