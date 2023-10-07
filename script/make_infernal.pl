@@ -56,7 +56,6 @@ foreach my $rna(@rna_list)
 
 foreach my $rna(@rna_list)
 {
-    next;
     next if ( -s "$rootdir/infernal/$rna.cm");
     my $sequence=$fasta_dict{$rna};
     my $cssr    =$cssr_dict{$rna};
