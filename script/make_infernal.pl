@@ -75,7 +75,6 @@ foreach my $rna(@rna_list)
     close(FP);
     open(FP,">$rootdir/infernal/$rna.sh\n");
     print FP "#!/bin/bash\n";
-    print FP "#SBATCH -N $rna\n";
     print FP "#SBATCH -o $rootdir/infernal/$rna.out\n";
     print FP "#SBATCH -t 48:00:00\n";
     print FP "#SBATCH -p sigbio\n";
