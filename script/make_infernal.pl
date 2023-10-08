@@ -51,6 +51,7 @@ foreach my $rna(@rna_list)
         $cssr=`cat $filename|head -1`;
         chomp($cssr);
     }
+    $cssr=~s/[\[\]\(\)]/./g;
     $cssr_dict{$rna}=$cssr;
 }
 
