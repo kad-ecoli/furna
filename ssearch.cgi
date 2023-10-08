@@ -57,7 +57,7 @@ else:
 <p><a href=.>[Back to Home]</a></p>
 ''')
 if not seq_type in ["protein","rna","dna"]:
-    ExitWithError("Sequence type must be one of the following: protein, rna, dna, peptide",html_footer)
+    ExitWithError("Sequence type must be one of the following: protein, rna, dna",html_footer)
 header=seq_type
 txt=''
 for line in sequence.splitlines():

@@ -218,9 +218,10 @@
     <li><a href=".">HOME</a></li>
     <li><a href="index.cgi#by_name">SEARCH</a>
         <ul>
-        <li><a href="index.cgi#by_name">Search by name</a></li>
-	<li><a href="index.cgi#by_seq">Search by sequence</a></li>
-	<li><a href="index.cgi#by_struct">Search by structure</a></li>
+        <li><a href="index.cgi#by_name">Search name</a></li>
+	<li><a href="index.cgi#by_blast">Search sequence by BLAST</a></li>
+	<li><a href="index.cgi#by_infernal">Search sequence by Infernal</a></li>
+	<li><a href="index.cgi#by_struct">Search structure</a></li>
         </ul>
     </li>
     <li><a href="search.cgi">BROWSE</a>
@@ -294,6 +295,12 @@ function example_rna()
     document.ssearchForm.sequence.value = STR;
     document.ssearchForm.seq_type.value = "rna";
 }
+function example_rna2()
+{
+    var STR=IO("example/rna.fasta");
+    document.isearchForm.sequence.value = STR;
+    document.isearchForm.seq_type.value = "rna";
+}
 function example_dna()
 {
     var STR=IO("example/dna.fasta");
@@ -309,7 +316,7 @@ function example_pdbfile()
 
 <p>
 <a name="by_name">
-<h1><u>Search database by name</u></h1>
+<h1><u>Search name</u></h1>
 </a>
 </p>
 <FORM name="qsearchForm" METHOD=POST ACTION="search.cgi"  onsubmit="return checkform(this);">
@@ -370,8 +377,8 @@ function example_pdbfile()
 <p></p>
 
 <p>
-<a name="by_seq">
-<h1><u>Search database by sequence</u></h1>
+<a name="by_blast">
+<h1><u>Search sequence (quick search by BLAST)</u></h1>
 </a>
 </p>
 <FORM name="ssearchForm" METHOD=POST ACTION="ssearch.cgi"  onsubmit="return checkform(this);">
@@ -390,15 +397,31 @@ Select Sequence type:&nbsp;&nbsp;&nbsp;&nbsp;
 Needleman-Wunsch alignment (NW-align), respectively.">
 <INPUT TYPE=SUBMIT VALUE="Search">
 &nbsp;&nbsp;
-<INPUT TYPE=RESET VALUE="Clear All">                                     
+<INPUT TYPE=RESET VALUE="Clear All">
 </span>
 </FORM>
 <p></p>
 
+<p>
+<a name="by_infernal">
+<h1><u>Search RNA sequence (sensitive search by Infernal)</u></h1>
+</a>
+</p>
+<FORM name="isearchForm" METHOD=POST ACTION="isearch.cgi"  onsubmit="return checkform(this);">
+Paste your sequence here:&nbsp;&nbsp;&nbsp;&nbsp;
+[<a href="javascript:example_rna2()">Sample rna input</a>]<br>
+<textarea name="sequence" rows=6 cols=80 placeholder="Example: cccgcuuaauucauucagaucuguaauagaacugucauucaaccccaaaaaucuagugcugauauaaccuucaccaauuagguucaaauaagugguaaug"></textarea>
+<br>
+<INPUT TYPE=SUBMIT VALUE="Search">
+&nbsp;&nbsp;
+<INPUT TYPE=RESET VALUE="Clear All">
+</span>
+</FORM>
+<p></p>
 
 <p>
 <a name="by_struct">
-<h1><u>Search database by RNA structure</u></h1>
+<h1><u>Search RNA structure</u></h1>
 </a>
 </p>
 <FORM name="fsearchForm" METHOD=POST ENCTYPE="MULTIPART/FORM-DATA" ACTION="fsearch.cgi"  onsubmit="return checkform(this);">

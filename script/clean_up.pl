@@ -18,6 +18,12 @@ foreach my $filename(`find $rootdir/output/*.fsearch/aln.m8 -mmin +60 2>/dev/nul
     my $cmd="rm -rf $filename*";
     system("$cmd");
 }
+foreach my $filename(`find $rootdir/output/*.isearch/sorted.tsv -mmin +60 2>/dev/null |sed 's/\\/sorted.tsv//g'`)
+{
+    chomp($filename);
+    my $cmd="rm -rf $filename*";
+    system("$cmd");
+}
 
 
 exit();

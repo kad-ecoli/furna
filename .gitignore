@@ -1,6 +1,7 @@
 output/*.gz
 output/*.html
 output/*.fsearch
+output/*.isearch
 output/*.cif
 output/*.pdb
 script/cdhit_src/cdhit-common.o

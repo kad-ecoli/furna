@@ -101,3 +101,5 @@ open(FP,">$rootdir/data/rna.cm");
 print FP "$txt";
 close(FP);
 system("$bindir/cmpress -F $rootdir/data/rna.cm");
+system("$bindir/make_hmmer.pl");
+exit();
