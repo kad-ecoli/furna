@@ -29,6 +29,7 @@ foreach my $line(`cat $rootdir/data/rna.fasta`)
     }
     else
     {
+        $line=~s/[A-Z]/n/g;
         $fasta_dict{$rna}="$line";
     }
 }
@@ -52,6 +53,7 @@ foreach my $rna(@rna_list)
         chomp($cssr);
     }
     $cssr=~s/[\[\]\(\)]/./g;
+    $cssr=~s/<>/../g;
     $cssr_dict{$rna}=$cssr;
 }
 
