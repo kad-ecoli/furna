@@ -27,3 +27,7 @@ script/curate_blastdb.pl
 script/download_uniprot.pl
 script/download_attract.pl
 script/make_summary.pl
+
+
+script/curate_usalign.pl
+script/make_infernal.pl

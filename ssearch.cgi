@@ -86,6 +86,27 @@ print('&gt;'+header+'<br>')
 print('<br>'.join(textwrap.wrap(sequence,80))+'<br><br>')
 print("The query sequence (length=%d) is searched through a non-redundant set of database sequences <a href=data/%s_nr.fasta>%s_nr.fasta</a> clustered at 100%% identity cutoff to identify representative hits. Homologs that belong to the same sequence cluster of the representative hit are listed in the last column of the table.<p></p>"%(len(sequence),seq_type,seq_type))
 
+name_dict=dict()
+fp=gzip.open("data/rna.tsv.gz",'rt')
+for line in fp.read().splitlines():
+    items=line.split('\t')
+    pdbid=items[0]
+    chainid=items[1]
+    name_dict[pdbid+chainid]=';<br>'.join(items[-2:])
+    name_dict[pdbid]=items[-2]
+fp.close()
+if seq_type!="rna":
+    fp=gzip.open("data/"+seq_type+".tsv.gz",'rt')
+    for line in fp.read().splitlines():
+        items=line.split('\t')
+        pdbid=items[0]
+        chainid=items[1]
+        name=items[-1]
+        if pdbid in name_dict:
+            name=name_dict[pdbid]+';\n'+name
+        name_dict[pdbid+chainid]=name
+    fp.close()
+
 blast="blastp"
 if seq_type.endswith("na"):
     blast="blastn"
@@ -136,14 +157,20 @@ for line in lines:
 
     
     pdbid,chainid=splitid(sacc)
-    hit="<a href=search.cgi?pdbid=%s&chain=%s target=_blank>%s:%s</a>"%(
-        pdbid,chainid,pdbid,chainid)
+    name=''
+    if sacc in name_dict:
+        name=name_dict[sacc]
+    hit='<span title="%s"><a href=search.cgi?pdbid=%s&chain=%s target=_blank>%s:%s</a></span>'%(
+        name,pdbid,chainid,pdbid,chainid)
     homolog_list=[]
     if sacc in hit2clust_dict:
         for mem in hit2clust_dict[sacc]:
             pdbid,chainid=splitid(mem)
-            homolog_list.append("<a href=search.cgi?pdbid=%s&chain=%s target=_blank>%s:%s</a>"%(
-                pdbid,chainid,pdbid,chainid))
+            name=''
+            if mem in name_dict:
+                name=name_dict[mem]
+            homolog_list.append('<span title="%s"><a href=search.cgi?pdbid=%s&chain=%s target=_blank>%s:%s</a></span>'%(
+                name,pdbid,chainid,pdbid,chainid))
     print('''
 <tr %s ALIGN=center>
     <td>%d</td>

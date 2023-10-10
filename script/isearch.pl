@@ -58,7 +58,7 @@ my $L1=length $sequence;
 
 if (!-s "$output/infernal.tblout")
 {
-    my $cmd="$bindir/cmscan --cpu 1 --tblout $output/infernal.tblout $rootdir/data/rna.cm $output/input.fasta > /dev/null";
+    my $cmd="$bindir/cmscan --cpu 1 --tblout $output/infernal.tblout $rootdir/data/rna.cm $output/input.fasta > $output/infernal.out";
     system("$cmd");
     if (!-f "$output/infernal.tblout")
     {
@@ -68,13 +68,25 @@ if (!-s "$output/infernal.tblout")
 }
 if (!-s "$output/hmmer.tblout")
 {
-    my $cmd="$bindir/hmmscan --cpu 1 --tblout $output/hmmer.tblout $rootdir/data/rna.hmm $output/input.fasta > /dev/null";
+    my $cmd="$bindir/hmmscan --cpu 1 --tblout $output/hmmer.tblout $rootdir/data/rna.hmm $output/input.fasta > $output/hmmer.out";
     system("$cmd");
     if (!-f "$output/hmmer.tblout")
     {
         print "no hmmer hit\n";
         exit(2);
     }
+}
+
+my %rna_dict;
+foreach my $line(`zcat $rootdir/data/rna.tsv.gz|cut -f1,2,16,17`)
+{
+    chomp($line);
+    my @items  =split(/\t/,$line);
+    my $pdbid  =$items[0];
+    my $asym_id=$items[1];
+    my $title  =$items[2];
+    my $name   =$items[3];
+    $rna_dict{"$pdbid:$asym_id"}="$title;\n$name";
 }
 
 #### prepare output ####
@@ -187,7 +199,12 @@ foreach my $line(`cat $output/sorted.tsv`)
         $pdbid="$1";
         $asym_id="$2";
     }
-    my $hit="<a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a>";
+    my $name="";
+    if (exists($rna_dict{"$pdbid:$asym_id"}))
+    {
+        $name=$rna_dict{"$pdbid:$asym_id"};
+    }
+    my $hit="<span title=\"$name\"><a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a></span>";
     my $homolog_line;
     if (exists $nr_dict{$sacc})
     {
@@ -197,7 +214,12 @@ foreach my $line(`cat $output/sorted.tsv`)
             {
                 my $pdbid="$1";
                 my $asym_id="$2";
-                $homolog_line.=", <a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a>";
+                my $name="";
+                if (exists($rna_dict{"$pdbid:$asym_id"}))
+                {
+                    $name=$rna_dict{"$pdbid:$asym_id"};
+                }
+                $homolog_line.=", <span title=\"$name\"><a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a></span>";
             }
         }
     }
@@ -217,8 +239,20 @@ EOF
 ;
 }
 
+my $infernal_out=`cat $output/infernal.out`;
+my $hmmer_out=`cat $output/hmmer.out`;
+
 print FP <<EOF
-</table><p></p><a href=../..>[Back]</a>
+</table><p></p>
+Infernal result:
+<pre>
+$infernal_out
+</pre>
+HMMER result:
+<pre>
+$hmmer_out
+</pre>
+<a href=../..>[Back]</a>
 $html_end
 EOF
 ;
