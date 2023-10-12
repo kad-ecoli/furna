@@ -92,7 +92,7 @@ for line in fp.read().splitlines():
     items=line.split('\t')
     pdbid=items[0]
     chainid=items[1]
-    name_dict[pdbid+chainid]=';<br>'.join(items[-2:])
+    name_dict[pdbid+chainid]=';\n'.join(items[-2:])
     name_dict[pdbid]=items[-2]
 fp.close()
 if seq_type!="rna":
