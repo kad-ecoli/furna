@@ -204,7 +204,7 @@ foreach my $line(`cat $output/sorted.tsv`)
     {
         $name=$rna_dict{"$pdbid:$asym_id"};
     }
-    my $hit="<span title=\"$name\"><a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a></span>";
+    my $hit="<span title=\"$name\"><a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a></span> $name";
     my $homolog_line;
     if (exists $nr_dict{$sacc})
     {

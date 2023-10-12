@@ -160,8 +160,8 @@ for line in lines:
     name=''
     if sacc in name_dict:
         name=name_dict[sacc]
-    hit='<span title="%s"><a href=search.cgi?pdbid=%s&chain=%s target=_blank>%s:%s</a></span>'%(
-        name,pdbid,chainid,pdbid,chainid)
+    hit='<span title="%s"><a href=search.cgi?pdbid=%s&chain=%s target=_blank>%s:%s</a></span> %s'%(
+        name,pdbid,chainid,pdbid,chainid,name)
     homolog_list=[]
     if sacc in hit2clust_dict:
         for mem in hit2clust_dict[sacc]:
