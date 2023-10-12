@@ -39,10 +39,10 @@ for line in sequence.splitlines():
             header=line
     else:
         txt+=line.upper()
+if len(header)==0:
+    header=">infernal"
 if header[0]=='>':
     header=header[1:]
-if len(header)==0:
-    header="infernal"
 sequence=txt.upper()
 if len(set(txt).difference(set("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))):
     ExitWithError("Unknown residue type "+' '.join(set(txt

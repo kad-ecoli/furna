@@ -79,7 +79,7 @@ foreach my $rna(@rna_list)
     open(FP,">$rootdir/infernal/$rna.sh\n");
     print FP "#!/bin/bash\n";
     print FP "#SBATCH -o $rootdir/infernal/$rna.out\n";
-    print FP "#SBATCH -t 48:00:00\n";
+    print FP "#SBATCH -t 168:00:00\n";
     print FP "#SBATCH -p sigbio\n";
     if ($L2<100) { print FP "#SBATCH --mem=1gb\n"; }
     else         { print FP "#SBATCH --mem=".($L2*10)."mb\n"; }
