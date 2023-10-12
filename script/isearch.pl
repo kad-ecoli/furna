@@ -58,7 +58,7 @@ my $L1=length $sequence;
 
 if (!-s "$output/infernal.tblout")
 {
-    my $cmd="$bindir/cmscan --cpu 1 --tblout $output/infernal.tblout $rootdir/data/rna.cm $output/input.fasta > $output/infernal.out";
+    my $cmd="$bindir/cmscan -Z 1 --cpu 1 --tblout $output/infernal.tblout $rootdir/data/rna.cm $output/input.fasta > $output/infernal.out";
     system("$cmd");
     if (!-f "$output/infernal.tblout")
     {
@@ -68,7 +68,7 @@ if (!-s "$output/infernal.tblout")
 }
 if (!-s "$output/hmmer.tblout")
 {
-    my $cmd="$bindir/hmmscan --cpu 1 --tblout $output/hmmer.tblout $rootdir/data/rna.hmm $output/input.fasta > $output/hmmer.out";
+    my $cmd="$bindir/hmmscan -Z 1 --cpu 1 --tblout $output/hmmer.tblout $rootdir/data/rna.hmm $output/input.fasta > $output/hmmer.out";
     system("$cmd");
     if (!-f "$output/hmmer.tblout")
     {
