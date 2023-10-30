@@ -149,12 +149,12 @@ def display_regular_ligand(ligand_info_list,ligand_dict):
     InChI   =''
     InChIKey=''
     SMILES  =''
-    name    =''
+    ligname =''
     ChEMBL  =''
     DrugBank=''
     ZINC    =''
     if ccd in ligand_dict:
-        formula,InChI,InChIKey,SMILES,name,ChEMBL,DrugBank,ZINC=ligand_dict[ccd]
+        formula,InChI,InChIKey,SMILES,ligname,ChEMBL,DrugBank,ZINC=ligand_dict[ccd]
 
     ligandID_txt="PDB: <a href=https://www.rcsb.org/ligand/%s target=_blank>%s</a>"%(ccd,ccd)
     if ChEMBL:
@@ -211,15 +211,16 @@ def display_regular_ligand(ligand_info_list,ligand_dict):
     <div id="RContent" style="display: block;">
     <table width=100% border="0" style="font-family:Monospace;font-size:14px;background:#F2F2F2;" >
     <tr><td align=center width=10%><strong>Ligand ID</strong></td><td>$ligandID_txt</td></tr>
-    <tr bgcolor="#DEDEDE"><td align=center><strong>Ligand 2D<br>structure</strong></td><td><a href="$svgfile" target=_blank><img src="$svgfile" style="display:block;" width=400></a></td></tr>
-    <tr><td align=center width=10%><strong>Formula</strong></td><td>$formula</td></tr>
+    <tr bgcolor="#DEDEDE"><td align=center width=10%><strong>Name</strong></td><td>$ligname</td></tr>
+    <tr><td align=center><strong>Ligand 2D<br>structure</strong></td><td><a href="$svgfile" target=_blank><img src="$svgfile" style="display:block;" width=400></a></td></tr>
+    <tr bgcolor="#DEDEDE"><td align=center width=10%><strong>Formula</strong></td><td>$formula</td></tr>
 
-    <tr bgcolor="#DEDEDE"><td align=center><strong>SMILES</strong></td><td>$smiles</td></tr>
-    <tr><td align=center width=10%><strong>InCHI</strong></td><td>$inchi<br>(InChIKey=$inchikey)</td></tr>
+    <tr><td align=center><strong>SMILES</strong></td><td>$smiles</td></tr>
+    <tr bgcolor="#DEDEDE"><td align=center width=10%><strong>InCHI</strong></td><td>$inchi<br>(InChIKey=$inchikey)</td></tr>
 
 
-    <tr bgcolor="#DEDEDE"><td align=center><strong>Ligand<br>chain</strong></td><td>Chain $ligCha $assembly</td></tr>
-    <tr><td align=center width=10%><strong>Residue<br>sequence<br>number of<br>the ligand</strong></td><td>$resSeq</td></tr>
+    <tr><td align=center><strong>Ligand<br>chain</strong></td><td>Chain $ligCha $assembly</td></tr>
+    <tr bgcolor="#DEDEDE"><td align=center width=10%><strong>Residue<br>sequence<br>number of<br>the ligand</strong></td><td>$resSeq</td></tr>
     </table>
     </div>
 </div>
@@ -333,6 +334,7 @@ def display_regular_ligand(ligand_info_list,ligand_dict):
       ).replace("$assemblyfile",assemblyfile
       ).replace("$complexfile",complexfile
       ).replace("$ligandfile",ligandfile
+      ).replace("$ligname",ligname
       ).replace("$assemblyviewscript",assemblyviewscript
       ).replace("$globalviewscript",globalviewscript
       ).replace("$localviewscript",localviewscript
