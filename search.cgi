@@ -297,7 +297,7 @@ for line in fp.read().splitlines()[1:]:
     items=(pdb,recCha,L,reso,rfam,rnacentral,pmid,ec,go_mf,go_bp,go_cc,
         taxon,sequence,cssr,dssr,title)
     if outfmt=='txt':
-        html_txt+='\t'.join(items)+'\n'
+        html_txt+=('\t'.join(items)).replace('\n',' ')+'\n'
     else:
         if order=="reso":
             sort_line.append((reso,items))
@@ -550,7 +550,7 @@ fp.close()
 
 print('''
 Download all results in tab-seperated text for 
-<a href="?outfmt=txt&%s" download="database.txt">%d RNAs</a>.<br>
+<a href="?outfmt=txt&%s" download="FURNA_dataset.txt">%d RNAs</a>.<br>
 <li>Hover over <strong>PDB</strong> to view the title of the structure.</li>
 <li>Hover over <strong>Rfam</strong> to view names of Rfam families.</li>
 <li>Hover over <strong>PubMed</strong> to view title of the PubMed publications.</li>
