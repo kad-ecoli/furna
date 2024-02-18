@@ -521,7 +521,11 @@ for l in range(totalNum):
         bgcolor='BGCOLOR="#DEDEDE"'
     html_txt+='''
 <tr %s>
-    <td align=center><a href=pdb.cgi?pdbid=%s&chain=%s>%d</a></td>
+    <td align=center>
+        <span title="Click to view structure details for\nPDB %s chain %s">
+        <a href=pdb.cgi?pdbid=%s&chain=%s>%d</a>
+        </span>
+    </td>
     <td style="word-wrap: break-word" align=center>
         <span title="%s"><a href="https://rcsb.org/structure/%s" target=_blank>%s</a>:%s<br>%s</span><br>
     </td>
@@ -535,7 +539,7 @@ for l in range(totalNum):
     <td>%s</td>
 </tr>
 '''%(bgcolor,
-    pdb,recCha,l+1,
+    pdb,recCha,pdb,recCha,l+1,
     title,pdb,pdb,recCha,reso,
     '\n'.join(textwrap.wrap(sequence,50)),L,
     ecgo,
@@ -551,6 +555,7 @@ fp.close()
 print('''
 Download all results in tab-seperated text for 
 <a href="?outfmt=txt&%s" download="FURNA_dataset.txt">%d RNAs</a>.<br>
+<li>Click <strong>#</strong> to view structure details of an RNA chain.</li>
 <li>Hover over <strong>PDB</strong> to view the title of the structure.</li>
 <li>Hover over <strong>Rfam</strong> to view names of Rfam families.</li>
 <li>Hover over <strong>PubMed</strong> to view title of the PubMed publications.</li>
@@ -623,7 +628,7 @@ print(navigator)
 print('''  
 <table border="0" width=100%>    
 <tr BGCOLOR="#FF9900" align=center>
-    <th><strong> # </strong></th>
+    <th><strong><span title="Click to view structure details of an RNA chain">#</span></strong></th>
     <th><strong> PDB<br>(Resolution)</strong></th>
     <th><strong> Length</strong></th>
     <th><strong> EC number<br>&amp; GO term </strong> </th>           
