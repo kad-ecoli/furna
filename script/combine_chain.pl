@@ -173,8 +173,8 @@ foreach my $line(`grep -v '^#' $rootdir/Rfam/rna_nr.tblout|sort -gk16,16`)
         my $target="$1";
         my $name  ="$2";
         my $rfam  ="$3";
-        my $evalue="$4";
-        next if ($evalue>1e-4);
+        #my $evalue="$4";
+        #next if ($evalue>1e-4);
         $rfam_name_dict{$rfam}="$name";
         if (exists($rfam_dict{$target}))
         {

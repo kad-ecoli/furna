@@ -47,7 +47,7 @@ system("ls $rootdir/Rfam/|grep rna_nr.split. |cut -f3 -d.|sort|uniq > $rootdir/R
 foreach my $batch (`tac $rootdir/Rfam/rna_nr.list`)
 {
     chomp($batch);
-    my $cmd="$bindir/cmsearch --cpu 4 -Z 1 --toponly --tblout $rootdir/Rfam/rna_nr.tblout.$batch $rootdir/Rfam/Rfam.cm.gz $rootdir/Rfam/rna_nr.split.$batch > /dev/null";
+    my $cmd="$bindir/cmsearch --cpu 4 -Z 549862.597050 --toponly --tblout $rootdir/Rfam/rna_nr.tblout.$batch $rootdir/Rfam/Rfam.cm.gz $rootdir/Rfam/rna_nr.split.$batch > /dev/null";
     print  "$cmd\n";
     system("$cmd");
 }
