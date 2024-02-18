@@ -166,13 +166,15 @@ foreach my $line(`cat $rootdir/Rfam/rfam2go`)
 my %rfam_dict;
 my %rfam_name_dict;
 print "$rootdir/Rfam/rna_nr.tblout\n";
-foreach my $line(`grep -v '^#' $rootdir/Rfam/rna_nr.tblout`)
+foreach my $line(`grep -v '^#' $rootdir/Rfam/rna_nr.tblout|sort -gk16,16`)
 {
-    if ($line=~/^(\w+)\s+\S+\s+(\S+)\s+(RF\d+)/)
+    if ($line=~/^(\w+)\s+\S+\s+(\S+)\s+(RF\d+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)/)
     {
         my $target="$1";
         my $name  ="$2";
         my $rfam  ="$3";
+        my $evalue="$4";
+        next if ($evalue>1e-4);
         $rfam_name_dict{$rfam}="$name";
         if (exists($rfam_dict{$target}))
         {
@@ -192,12 +194,13 @@ foreach my $line(`grep -v '^#' $rootdir/Rfam/rna_nr.tblout`)
                 }
             }
         }
+        #print "$target\t$name\t$rfam\t$evalue\n";
     }
 }
 my %rfam_origin_dict;
 my @rfam_origin_list;
 print "$rootdir/Rfam/Rfam.pdb.gz";
-foreach my $line(`zcat $rootdir/Rfam/Rfam.pdb.gz|cut -f1,2,3`)
+foreach my $line(`zcat $rootdir/Rfam/Rfam.pdb.gz|sort -gk7,7|cut -f1,2,3`)
 {
     if ($line=~/(RF\d+)\t(\w+)\t(\w+)/)
     {
@@ -216,12 +219,13 @@ foreach my $line(`zcat $rootdir/Rfam/Rfam.pdb.gz|cut -f1,2,3`)
         }
     }
 }
+# overwrite cmsearch result when applicable
 foreach my $target(@rfam_origin_list)
 {
-    if (!exists($rfam_dict{$target}))
-    {
+    #if (!exists($rfam_dict{$target}))
+    #{
         $rfam_dict{$target}=$rfam_origin_dict{$target};
-    }
+    #}
 }
 
 
