@@ -355,7 +355,7 @@ Hover over <strong>Site #</strong> to view the binding residues.</li>
 
 
 print(('''<p></p>
-<form name="sform" action="qsearch.cgi">
+<form name="sform" action="rsearch.cgi">
 Sort results by
 <select name="order" onchange="this.form.submit()">
     <option value="pdbid">PDB ID</option>
@@ -388,7 +388,7 @@ for p in range(page-10,page+11):
 print('''
 <a class='hover' href='?&page=%d&%s'>&gt</a>
 <a class='hover' href='?&page=last&%s'>&gt&gt</a>
-<form name="pform" action="qsearch.cgi">Go to page <select name="page" onchange="this.form.submit()">
+<form name="pform" action="rsearch.cgi">Go to page <select name="page" onchange="this.form.submit()">
 '''%(page+1,para,para))
 for p in range(1,totalPage+1):
     if p==page:
