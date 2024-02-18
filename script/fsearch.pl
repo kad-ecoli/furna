@@ -110,13 +110,18 @@ EOF
 
 
 my %target2id;
-foreach my $line(`zcat $rootdir/data/rna.tsv.gz |cut -f1,2`)
+my %target2name;
+foreach my $line(`zcat $rootdir/data/rna.tsv.gz |cut -f1,2,16,17`)
 {
-    if ($line=~/(\w+)\t(\w+)/)
+    chomp($line);
+    if ($line=~/(\w+)\t(\w+)\t([\s\S]+)\t([\s\S]+)$/)
     {
         my $pdbid="$1";
         my $chainid="$2";
         $target2id{"$pdbid$chainid"}="$pdbid:$chainid";
+        my $title="$3";
+        my $name="$4";
+        $target2name{"$pdbid$chainid"}="$title;\n$name";
     }
 }
 
@@ -184,6 +189,10 @@ foreach my $line(`cat $output/aln.m8|sort -k3nr|grep -v '^#'`)
         $asym_id="$2";
     }
     my $hit="<a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a>";
+    if (exists($target2name{$sacc}))
+    {
+        $hit="<span title=\"$target2name{$sacc}\">$hit</span>";
+    }
     my $homolog_line;
     if (exists $hit2clust_dict{$sacc})
     {
@@ -193,7 +202,12 @@ foreach my $line(`cat $output/aln.m8|sort -k3nr|grep -v '^#'`)
             {
                 my $pdbid="$1";
                 my $asym_id="$2";
-                $homolog_line.=", <a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a>";
+                my $line="<a href=../../search.cgi?pdbid=$pdbid&chain=$asym_id target=_blank>$pdbid:$asym_id</a>";
+                if (exists($target2name{$mem}))
+                {
+                    $line="<span title=\"$target2name{$mem}\">$line</span>";
+                }
+                $homolog_line.=", $line";
             }
         }
     }
