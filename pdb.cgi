@@ -25,11 +25,23 @@ def get_svg_ratio(svgfile):
     fp.close()
     return 0
 
-def display_interaction_list(pdbid,asym_id,ligand_dict):
+def display_interaction_list(pdbid,asym_id,ligand_dict,ribocentre_info_list):
     idx=0
 
+
+    csa_jmol=''
+    csa_msg=''
+    if len(ribocentre_info_list):
+        csa_list=[]
+        for items in ribocentre_info_list:
+            csa_orig  =items[6]
+            csa_list.append(csa_orig)
+        csa_list=list(set((','.join(csa_list)).split(',')))
+        csa_jmol="select rna and chain like "+asym_id+" and *.C1' and ("+','.join(csa_list)+"); label %m%R; color label grey; select rna and chain like "+asym_id+" and ("+','.join(csa_list)+"); spacefill 25%; wireframe 50;"
+        csa_msg=".<br>Catalytic site nucleotides are indicated by grey fonts."
+
     assemblyfile="output/"+pdbid+asym_id+".cif.gz"
-    assemblyviewscript="load "+assemblyfile+"; color background black; select protein or rna or dna; spacefill off; wireframe off; cartoons; select not chain like "+asym_id+" and not hetero; color grey; select rna and chain like "+asym_id+" and not hetero; color group; select hetero; spacefill 70%; wireframe on;"
+    assemblyviewscript="load "+assemblyfile+"; color background black; select protein or rna or dna; spacefill off; wireframe off; cartoons; select not chain like "+asym_id+" and not hetero; color grey; select rna and chain like "+asym_id+" and not hetero; color group; "+csa_jmol+" select hetero; spacefill 70%; wireframe on;"
 
     fp=gzip.open("%s/data/interaction.tsv.gz"%rootdir,'rt')
     for line in fp.read().splitlines():
@@ -68,7 +80,7 @@ def display_interaction_list(pdbid,asym_id,ligand_dict):
             <span id=assemblyview></span>
         </td>
         <td>
-            All interaction partners of the RNA<br>
+            All interaction partners of the RNA$csa_msg<br>
             [<a href="javascript:Jmol.script(jmolApplet2, 'spin on')">Spin on</a>]
             [<a href="javascript:Jmol.script(jmolApplet2, 'spin off')">Spin off</a>]
             [<a href="javascript:Jmol.script(jmolApplet2, 'Reset')">Reset orientation</a>]<br>
@@ -93,7 +105,8 @@ def display_interaction_list(pdbid,asym_id,ligand_dict):
             (residue number reindexed from 1)</th>
     </tr>
     '''.replace("$assemblyviewscript",assemblyviewscript
-       ).replace("$assembly",assembly))
+       ).replace("$assembly",assembly
+       ).replace("$csa_msg",csa_msg))
         idx+=1
         ccd=items[3]
         ligCha=items[4]
@@ -133,7 +146,7 @@ def display_interaction_list(pdbid,asym_id,ligand_dict):
         print("</table></div></td></tr>")
     return
 
-def display_regular_ligand(ligand_info_list,ligand_dict):
+def display_regular_ligand(ligand_info_list,ribocentre_info_list,ligand_dict):
     pdbid          =ligand_info_list[0]
     asym_id        =ligand_info_list[1]
     assembly       =ligand_info_list[2]
@@ -350,8 +363,9 @@ def display_regular_ligand(ligand_info_list,ligand_dict):
 
     return
 
-def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,
-    go_dict,rfam_dict,rna_info_list,rnacentral_dict,uniprot_dict):
+def display_polymer_ligand(ligand_info_list,ribocentre_info_list,
+    taxon_dict,parent_dict,ec_dict,go_dict,rfam_dict,
+    rna_info_list,rnacentral_dict,uniprot_dict):
     pdbid          =ligand_info_list[0]
     asym_id        =ligand_info_list[1]
     assembly       =ligand_info_list[2]
@@ -886,8 +900,9 @@ def display_polymer_ligand(ligand_info_list,taxon_dict,parent_dict,ec_dict,
 
     return
 
-def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
-    go_dict,rfam_dict,rnacentral_dict,fimo_dict,pubmed_dict):
+def display_receptor(rna_info_list,ribocentre_info_list,
+    taxon_dict,parent_dict,ec_dict,go_dict,rfam_dict,
+    rnacentral_dict,fimo_dict,pubmed_dict,ribocentre_dict):
     pdbid     =rna_info_list[0]
     asym_id   =rna_info_list[1]
     L     =int(rna_info_list[2])
@@ -1137,6 +1152,45 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
             
         fimo_table+="</table></td></tr>"
 
+    ribocentre_table=''
+    csa_jmol=''
+    csa_msg=''
+    if len(ribocentre_info_list):
+        if bgcolor:
+            bgcolor=''
+        else:
+            bgcolor='bgcolor="#DEDEDE"'
+        ribocentre_table+='<tr '+bgcolor+'''><td align=center><strong>Catalytic<br>site</strong></td><td>
+        <table width=100%>
+        <tr align=center bgcolor="#DEDEDE">
+            <th>Ribocentre<br>name</th>
+            <th>Active site nucleotides<br>(original residue number in PDB)</th>
+            <th>Active site nucleotides<br>(residue number reindexed from 1)</th>
+            <th>Description</th>
+        </tr>
+        '''
+        csa_list=[]
+        for items in ribocentre_info_list:
+            ribocentre=items[5]
+            csa_orig  =items[6]
+            csa_renum =items[7]
+            description=ribocentre
+            if ribocentre in ribocentre_dict:
+                description=ribocentre_dict[ribocentre]
+            ribocentre_table+='''
+        <tr align=center>
+            <td><a href=https://www.ribocentre.org/docs/%s.html target=_blank>%s</a></td>
+            <td>%s</td>
+            <td>%s</td>
+            <td>%s</td>
+        </tr>
+            '''%(ribocentre,ribocentre,csa_orig,csa_renum,description)
+            csa_list.append(csa_orig)
+        csa_list=list(set((','.join(csa_list)).split(',')))
+        csa_jmol="select rna and *.C1' and ("+','.join(csa_list)+"); label %m%R; color label grey; select rna and ("+','.join(csa_list)+"); spacefill 25%; wireframe 50;"
+        csa_msg=".<br>Catalytic site nucleotides are indicated by grey fonts."
+        ribocentre_table+='''
+        </table></td></tr>'''
     
 
     print('''
@@ -1162,7 +1216,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
                     width: 400,
                     height: 400,
                     j2sPath: "jsmol/j2s",
-                    script: "load $chainfile; color background black; cartoons; color group; spacefill off; wireframe off;"
+                    script: "load $chainfile; color background black; cartoons; color group; spacefill off; wireframe off;$csa_jmol"
                 }
                 $("#mychain").html(Jmol.getAppletHtml("jmolApplet0",Info))
             });
@@ -1178,7 +1232,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
                     width: 400,
                     height: 400,
                     j2sPath: "jsmol/j2s",
-                    script: "load $arenafile; color background black; cartoons; color group; spacefill off; wireframe off;"
+                    script: "load $arenafile; color background black; cartoons; color group; spacefill off; wireframe off;$csa_jmol"
                 }
                 $("#myarena").html(Jmol.getAppletHtml("jmolApplet1",Info))
             });
@@ -1189,7 +1243,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
     <tr align=left>
     -->
         <td>
-            Original structue of $pdbid$asym_id<br>
+            Original structue of $pdbid$asym_id$csa_msg<br>
             [<a href="javascript:Jmol.script(jmolApplet0, 'spin on')">Spin on</a>]
             [<a href="javascript:Jmol.script(jmolApplet0, 'spin off')">Spin off</a>]
             [<a href="javascript:Jmol.script(jmolApplet0, 'Reset')">Reset orientation</a>]<br>
@@ -1222,6 +1276,7 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
     $go_table
     $ec_table
     $fimo_table
+    $ribocentre_table
     </table>
 </div>
 </td></tr>
@@ -1238,6 +1293,9 @@ def display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
   ).replace("$ec_table" ,ec_table
   ).replace("$fimo_table",fimo_table
   ).replace("$rnacentral_table",rnacentral_table
+  ).replace("$ribocentre_table",ribocentre_table
+  ).replace("$csa_jmol" ,csa_jmol
+  ).replace("$csa_msg"  ,csa_msg
   ).replace("$name"     ,name
   ))
     return
@@ -1258,6 +1316,18 @@ def get_rna_info(pdbid,asym_id):
             break
     fp.close()
     return rna_info_list
+
+def get_ribocentre_info(pdbid,asym_id):
+    ribocentre_info_list=[]
+    fp=gzip.open("%s/data/ribocentre.tsv.gz"%rootdir,'rt')
+    for line in fp.read().splitlines():
+        if not line.startswith(pdbid):
+            continue
+        items=line.split('\t')
+        if items[0]==pdbid and items[1]==asym_id:
+            ribocentre_info_list.append(items)
+    fp.close()
+    return ribocentre_info_list
 
 def get_ligand_info(pdbid,asym_id,lig3,ligCha,ligIdx):
     ligand_info_list=[]
@@ -1372,6 +1442,16 @@ def read_fimo():
             #fimo_dict[key].append(["cisbp"]+items[2:])
         #fp.close()
     return fimo_dict
+
+def read_ribocentre():
+    ribocentre_dict=dict()
+    if os.path.isfile(rootdir+"/ribocentre/docs.tsv"):
+        fp=open(rootdir+"/ribocentre/docs.tsv")
+        for line in fp.read().splitlines():
+            items=line.split('\t')
+            ribocentre_dict[items[0]]=items[-1]
+        fp.close()
+    return ribocentre_dict
 
 def extract_ligand(pdbid,asym_id,lig3,ligCha,ligIdx):
     divided=pdbid[-3:-1]
@@ -1839,8 +1919,10 @@ if __name__=="__main__":
         exit()
 
     rna_info_list=[]
+    ribocentre_info_list=[]
     if pdbid and asym_id:
         rna_info_list=get_rna_info(pdbid,asym_id)
+        ribocentre_info_list=get_ribocentre_info(pdbid,asym_id)
     if len(rna_info_list)==0:
         print('''</table>
 Unknown pdb chain %s:%s
@@ -1868,6 +1950,7 @@ Unknown pdb chain %s:%s
     rnacentral_dict=read_rnacentral()
     uniprot_dict=read_uniprot()
     fimo_dict=read_fimo()
+    ribocentre_dict=read_ribocentre()
 
     pubmed=''
     if len(rna_info_list[6]):
@@ -1886,21 +1969,22 @@ Unknown pdb chain %s:%s
         pubmed='''<tr bgcolor="#DEDEDE">'''
         pubmed+='''<td align=center><strong>PubMed</strong></td><td>%s</td></tr>'''%(''.join(pubmed_list))
 
-    display_receptor(rna_info_list,taxon_dict,parent_dict,ec_dict,
-        go_dict,rfam_dict,rnacentral_dict,fimo_dict,pubmed_dict)
+    display_receptor(rna_info_list,ribocentre_info_list,
+        taxon_dict,parent_dict,ec_dict,go_dict,rfam_dict,rnacentral_dict,
+        fimo_dict,pubmed_dict,ribocentre_dict)
     extract_assembly(pdbid,asym_id)
     if lig3 and ligCha and ligIdx:
         ligand_info_list=get_ligand_info(pdbid,asym_id,lig3,ligCha,ligIdx)
         if ligand_info_list:
             extract_ligand(pdbid,asym_id,lig3,ligCha,ligIdx)
             if not lig3 in ["protein","dna","rna"]:
-                display_regular_ligand(ligand_info_list,ligand_dict)
+                display_regular_ligand(ligand_info_list,ribocentre_info_list,ligand_dict)
             else:
-                display_polymer_ligand(ligand_info_list,taxon_dict,
+                display_polymer_ligand(ligand_info_list,ribocentre_info_list,taxon_dict,
                     parent_dict,ec_dict,go_dict,rfam_dict,rna_info_list,
                     rnacentral_dict,uniprot_dict)
     else:
-        display_interaction_list(pdbid,asym_id,ligand_dict)
+        display_interaction_list(pdbid,asym_id,ligand_dict,ribocentre_info_list)
    
     print('''
 <tr><td>
@@ -1911,7 +1995,7 @@ Unknown pdb chain %s:%s
 <div id="contentDiv">
     <div id="RContent" style="display: block;">
     <table width=100% border="0" style="font-family:Monospace;font-size:14px;background:#F2F2F2;" >
-    <tr><td align=center width=10%><strong>Structure<br>database</strong></td>
+    <tr><td align=center width=10%><strong>Structure<br>databases</strong></td>
         <td width=90%>
             <a href=https://rcsb.org/structure/$pdbid target=_blank>RCSB</a>,
             <a href=https://ebi.ac.uk/pdbe/entry/pdb/$pdbid target=_blank>PDBe</a>,
