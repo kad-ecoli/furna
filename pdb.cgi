@@ -1953,8 +1953,8 @@ Unknown pdb chain %s:%s
     ribocentre_dict=read_ribocentre()
 
     pubmed=''
+    pubmed_dict=dict()
     if len(rna_info_list[6]):
-        pubmed_dict=dict()
         fp=gzip.open("%s/data/pubmed.tsv.gz"%rootdir,'rt')
         for line in fp.read().splitlines():
             items=line.split('\t')
