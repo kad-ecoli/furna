@@ -1,5 +1,6 @@
 #Ribocentre	PDB	Rfam	LBS_origin	LBS_renum	Description
 HDV	4prf	NA,RF00094	100,101,163	2,3,65	The hepatitis delta virus (HDV) ribozyme is a viral-derived small ribozyme that catalyzes the site-specific self-cleavage reaction.
+HDV-like	7qr4	NA,RF00622	59	59	The HDV-like ribozymes are many ribozymes structurally and biochemically related to HDV ribozymes.
 Hairpin	1m5o	NA,RF00173,RF04190,RF04191	8,57	8,57	Hairpin ribozymes initially found in plant RNA viruses catalyze the site-specific self-cleavage reaction and consist of four stems in two general domains.
 Hatchet	6jq5	NA,RF02678	1,31,62,63,64	1,31,62,63,64	The hatchet ribozyme is a nucleolytic ribozyme.
 Pistol	6r47	NA,RF02679	32,33,40,41,42	31,32,39,40,41	The pistol ribozyme is a nucleolytic ribozyme.
@@ -8,6 +9,7 @@ Ribosome	1vqn	RF00002,RF02540,RF02541,RF02543,RF02546	2284,2285,2485,2486,2487,2
 VS-ribozyme	4r4v	NA	620,621,638,751	20,21,38,151	The Varkud satellite (VS) ribozyme exists in the Neurospora mitochondria and performs site-specific scission of poly VS RNAs into linear monomers.
 glms	2ho7	RF00234	40	18	The glmS riboswitch is a self-cleavage ribozyme located in the 5' untranslated region of the glmS gene.
 groupI	7ez0	RF00028	261,262,263,264,265,266,306,309,310,311,312	240,241,242,243,244,245,285,288,289,290,291	Group I introns use exogenous guanosine as a cofactor to catalyze self-cleavage and exon ligation through sequential ester-transfer reactions.
+LC-ribozyme	4p8z	RF01807	166,167,168,169	166,167,168,169	The Lariat capping ribozyme is a ~180 nt ribozyme with an apparent resemblance to a group I ribozyme.
 groupII	4far	RF00029	358,359,375,376,377	358,359,375,376,377	Group II introns can catalyze RNA self-splicing through an autocatalytic two-step reaction and mediate reverse-splicing.
 hammer	3zd5	NA,RF00008,RF00163,RF02275,RF02276,RF02277,RF03152	20,36	19,35	The hammerhead ribozyme catalyzes the site-specific self-cleavage reaction and is named for the resemblance of early secondary structure diagrams to a hammerhead shark.
 twister-sister	5t5a	NA,RF02681	7,9,54,55	7,9,54,55	The twister sister ribozyme (TS) is a nucleolytic ribozyme.
