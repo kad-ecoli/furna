@@ -90,18 +90,35 @@ open(FP,">$output/index.html");
 print FP <<EOF
 $html_header
 Search <a href=$infile>$infile</a> (L=$L1) through the database by US-align (-fast mode). Results are ranked in descending order of TM-score normalized by query.<br>
+<li>Hover over <strong>Hit</strong> or <strong>Homologs to hit</strong> to view the title of the structure.</li>
 
 <table border="0" align=center width=100%>    
 <tr BGCOLOR="#FF9900">
     <th ALIGN=center><strong> # </strong></th>
     <th ALIGN=center><strong> Hit</strong></th>
-    <th ALIGN=center><strong> TM-score<br> normalized <br>by query</strong> </th>           
-    <th ALIGN=center><strong> TM-score<br> normalized <br>by hit</strong> </th>           
+    <th ALIGN=center>
+        <strong> TM-score<br>normalized<br>by query</strong> 
+    </th>
+    <th ALIGN=center>
+        <font color="#FF9900">_normalized_</font><br>
+        <strong> TM-score<br>normalized<br>by hit</strong>
+        <br><font color="#FF9900">_normalized_</font>
+    </th>
     <th ALIGN=center><strong> RMSD </strong> </th>           
-    <th ALIGN=center><strong> Identity<br> normalized <br>by query</strong> </th>           
-    <th ALIGN=center><strong> Identity<br> normalized <br>by hit</strong> </th>           
-    <th ALIGN=center><strong> Identity<br> normalized <br> by aligned <br>length</strong> </th>           
-    <th ALIGN=center><strong> Hit<br>length</strong> </th>           
+    <th ALIGN=center>
+        <font color="#FF9900">_normalized_</font><br>
+        <strong> Identity<br>normalized<br>by query</strong>
+        <br><font color="#FF9900">_normalized_</font>
+    </th>
+    <th ALIGN=center>
+        <font color="#FF9900">_normalized_</font><br>
+        <strong> Identity<br>normalized<br>by hit</strong>
+        <br><font color="#FF9900">_normalized_</font>
+    </th>
+    <th ALIGN=center>
+        <strong> Identity<br>normalized<br> by aligned <br>length</strong>
+    </th>      
+    <th ALIGN=center><strong> Length</strong> </th>           
     <th ALIGN=center><strong> Aligned<br>length</strong></th>
     <th ALIGN=center><strong> Homologs<br>to hit</strong> </th>           
 </tr><tr ALIGN=center>

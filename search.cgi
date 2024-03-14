@@ -555,7 +555,7 @@ fp.close()
 print('''
 Download all results in tab-seperated text for 
 <a href="?outfmt=txt&%s" download="FURNA_dataset.txt">%d RNAs</a>.<br>
-<li>Click <strong>#</strong> to view structure details of an RNA chain.</li>
+<li>Click the entry in the '<strong>#</strong>' column to view structure details of that RNA chain.</li>
 <li>Hover over <strong>PDB</strong> to view the title of the structure.</li>
 <li>Hover over <strong>Rfam</strong> to view names of Rfam families.</li>
 <li>Hover over <strong>PubMed</strong> to view title of the PubMed publications.</li>

@@ -123,7 +123,7 @@ print('''
 <tr BGCOLOR="#FF9900">
     <th width=5% ALIGN=center><strong> # </strong></th>
     <th width=10% ALIGN=center><strong> Hit </strong></th>
-    <th width=10% ALIGN=center><strong> Hit<br>length </strong></th>
+    <th width=10% ALIGN=center><strong> Length </strong></th>
     <th width=10% ALIGN=center><strong> Aligned<br>length </strong></th>
     <th width=10% ALIGN=center><strong> Identity<br>(normalized<br>by query)</strong> </th>           
     <th width=10% ALIGN=center><strong> Identity<br>(normalized<br>by hit)</strong> </th>           

@@ -108,7 +108,7 @@ Search <a href=input.fasta>input.fasta</a> (L=$L1) through the database by Infer
 <tr BGCOLOR="#FF9900">
     <th ALIGN=center><strong> # </strong></th>
     <th ALIGN=center><strong> Hit</strong></th>
-    <th ALIGN=center><strong> Hit<br>length</strong></th>
+    <th ALIGN=center><strong> Length</strong></th>
     <th ALIGN=center><strong> Strand</strong></th>
     <th ALIGN=center><strong> E-value</strong></th>
     <th ALIGN=center><strong> Homologs<br>to hit</strong> </th>           
