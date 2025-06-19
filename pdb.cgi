@@ -1909,7 +1909,7 @@ if __name__=="__main__":
 ''')
 
     fp=open("%s/index.html"%rootdir)
-    txt=fp.read()
+    txt=fp.read().replace("<a href=.><img src=images/furna.png></a>","")
     if '<!-- MENU START -->' in txt and '<!-- MENU END -->' in txt:
         print(txt.split('<!-- MENU START -->')[1].split('<!-- MENU END -->')[0])
     fp.close()
